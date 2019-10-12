@@ -10,8 +10,8 @@ assignees: ''
 ## Description
 A clear and concise description of what the bug is.
 
-**Gomen.jl Version:** ???
-**Operating System:** <OS> <VERSION>
+* **Gomen.jl Version:** ???
+* **Operating System:** <OS> <VERSION>
 
 ## To Reproduce
 Describe the steps to reproduce the bug, and include a script if possible.
