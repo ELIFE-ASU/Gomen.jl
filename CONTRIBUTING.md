@@ -118,7 +118,7 @@ begin development, have several recommendations that will make your life easier.
  * **Fetch changes from [ELIFE-ASU/Gomen.jl](https://github.com/ELIFE-ASU/Gomen.jl)'s master branch
    often** and merge them into your working branch. This will reduce the number and severity of
    merge conflicts that you will have to deal with. [How do I fetch changes from
-   ELIFE-ASU/Gomen.jl?](#how-do-i-fetch-changes-from-elife-asugomen-jl)
+   ELIFE-ASU/Gomen.jl?](#how-do-i-fetch-changes-from-elife-asugomenjl)
 
 ### Pull Requests
 
