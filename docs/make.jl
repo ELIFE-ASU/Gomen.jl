@@ -9,6 +9,7 @@ makedocs(
     authors = "Douglas G. Moore",
     pages = Any[
         "Home" => "index.md",
+        "API Reference" => "api.md",
     ]
 )
 
