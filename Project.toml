@@ -1,0 +1,4 @@
+name = "Gomen"
+uuid = "96b78620-ec9c-11e9-2683-a967ce6b552f"
+authors = ["Douglas G. Moore <doug@dglmoore.com>"]
+version = "0.1.0"
