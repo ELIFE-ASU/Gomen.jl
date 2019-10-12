@@ -45,7 +45,7 @@ original issue in the body of your new one.
 
 Bugs are tracked as [GitHub issues](https://guides.github.com/features/issues/). After you are sure the bug is either
 new, or needs to be readdressed, create an issue and provide the following information by filling in
-[the template](https://github.com/elife-asu/neet/blob/master/.github/ISSUE_TEMPLATE/bug_report.md).
+[the template](.github/ISSUE_TEMPLATE/bug_report.md).
 
 Explain the problem and include addition details to help maintainers reproduce the problem:
 
@@ -81,14 +81,14 @@ new features and minor improvements to existing functionality. Following these g
 maintainers and the community understand your suggestion, find related suggestions, and prioritize
 feature development.
 
-Before creating a feature request, perform a [cursory search](https://github.com/search?utf8=%E2%9C%93&q=+is%3Aissue+repo%3Aelife-asu%2Fneet+label%3A%22feature+request%22+&type=) to see if it has
+Before creating a feature request, perform a [cursory search](https://github.com/search?utf8=%E2%9C%93&q=+is%3Aissue+repo%3AELIFE-ASU%2FGomen.jl+label%3A%22feature+request%22+&type=) to see if it has
 already been suggested. If it has, add a comment to the existing issue instead of opening a new one.
 
 #### How do I submit a feature request?
 
 Feature requests are tracked [GitHub issues](https://guides.github.com/features/issues/). After you are sure the
 request is not a duplicate, create an issue and provide the following information by filling in
-[the template](https://github.com/ELIFE-ASU/Gomen.jl/blob/master/.github/ISSUE_TEMPLATE/feature_request.md).
+[the template](.github/ISSUE_TEMPLATE/feature_request.md).
 
   * **Use a clear and descriptive title** for the issue to identify the suggestion.
   * **Provide a description of the feature** in as much detail as possible.
@@ -101,7 +101,7 @@ request is not a duplicate, create an issue and provide the following informatio
 ### Your First Code Contribution
 
 Your contributions are more than welcome!  before you get started It's also advisable that you read
-through the [API documentation](https://neet.readthedocs.io/en/latest/api.html) to make sure that
+through the [API documentation](elife-asu.github.io/Gomen.jl/dev) to make sure that
 you fully understand how the various components of Gomen.jl interact.
 
 For external contributions, we use [GitHub forks](https://guides.github.com/activities/forking/) and
@@ -118,7 +118,7 @@ begin development, have several recommendations that will make your life easier.
  * **Fetch changes from [ELIFE-ASU/Gomen.jl](https://github.com/ELIFE-ASU/Gomen.jl)'s master branch
    often** and merge them into your working branch. This will reduce the number and severity of
    merge conflicts that you will have to deal with. [How do I fetch changes from
-   ELIFE-ASU/Gomen.jl?](#how-do-i-fetch-changes-from-elife-asuneet)
+   ELIFE-ASU/Gomen.jl?](#how-do-i-fetch-changes-from-elife-asugomen-jl)
 
 ### Pull Requests
 
@@ -133,7 +133,7 @@ Please follow these steps to have your contribution considered by the maintainer
 
   1. **Use a clear and descriptive title** for your pull request.
   2. Follow all instructions in the [pull request
-     template](https://github.com/ELIFE-ASU/Gomen.jl/blob/master/.github/pull_request_template.md).
+     template](.github/pull_request_template.md).
   3. Follow the [styleguides](#styleguides)
   4. After you submit your pull request, verify that all
      [status checks](https://help.github.com/articles/about-status-checks/) are passing.
@@ -175,7 +175,7 @@ Please follow these steps to have your contribution considered by the maintainer
 
 ### How do I fetch changes from ELIFE-ASU/Gomen.jl?
 
-After you have cloned your fork, add the [ELIFE-ASU/Gomen.jl](https://github.com/ELIFE-ASU/neet) as
+After you have cloned your fork, add the [ELIFE-ASU/Gomen.jl](https://github.com/ELIFE-ASU/Gomen.jl) as
 a remote:
 ```shell
 $ git add remote elife https://github.com/ELIFE-ASU/Gomen.jl.git
