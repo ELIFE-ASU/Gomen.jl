@@ -12,6 +12,6 @@
 [codecov-url]: https://codecov.io/gh/elife-asu/gomen.jl
 
 [doc-latest-img]: https://img.shields.io/badge/docs-latest-blue.svg
-[doc-latest-url]: https://dglmoore.com/Gomen.jl/latest/
+[doc-latest-url]: https://elife-asu.github.io/Gomen.jl/latest/
 
 Gomen is a package for simulating game playing agents on a graph.
