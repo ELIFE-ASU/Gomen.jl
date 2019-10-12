@@ -1,3 +1,3 @@
 using Gomen, Test
 
-@test 1 + 2 == 5
+@test 1 + 2 == 3
