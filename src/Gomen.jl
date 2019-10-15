@@ -23,7 +23,7 @@ a payoff matrix
 \end{bmatrix}
 ```
 
-with ``-0.5 \\leq S \\leq 0.5`` and ``0.5 \\leq T \\leq 1.5``,
+with ``-0.5 \leq S \leq 0.5`` and ``0.5 \leq T \leq 1.5``,
 """
 struct Game
     payoffs::SMatrix{2, 2, Float64}
