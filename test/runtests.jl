@@ -1,4 +1,7 @@
-using Gomen, Test, StaticArrays, Base.MathConstants, Random, LightGraphs
+using Gomen
+using Base.MathConstants, Random, Test
+using StaticArrays
+using LightGraphs, LightGraphs.SimpleGraphs
 
 @testset "Game" begin
     @testset "Construction" begin
@@ -142,5 +145,31 @@ end
     @testset "Nodes and Edges" for nrows in 1:10, ncols in 1:10
         @test nv(lattice_graph(nrows, ncols)) == nrows * ncols
         @test ne(lattice_graph(nrows, ncols)) == 2 * nrows * ncols - nrows - ncols
+    end
+end
+
+@testset "Arena" begin
+    @testset "Construction" begin
+        let game = Game(0, 1)
+            scheme = CounterFactual()
+            @test_throws DomainError Arena(game, SimpleGraph(), scheme)
+            @test_throws DomainError Arena(game, SimpleGraph(1), scheme)
+            let graph = SimpleGraph(2)
+                add_edge!(graph, 1, 1)
+                add_edge!(graph, 2, 2)
+                @test_throws DomainError Arena(game, graph, scheme)
+            end
+            let graph = SimpleGraph(2)
+                add_edge!(graph, 1, 1)
+                add_edge!(graph, 1, 2)
+                @test_throws DomainError Arena(game, graph, scheme)
+            end
+            let graph = SimpleGraph(3)
+                add_edge!(graph, 1, 2)
+                @test_throws DomainError Arena(game, graph, scheme)
+            end
+
+            @test length(Arena(game, cycle_graph(10), scheme)) == 10
+        end
     end
 end

@@ -4,6 +4,7 @@ export Game, play
 export AbstractRule, apply, Sigmoid, Heaviside
 export barabasi_albert, erdos_renyi, wheel_graph, star_graph, lattice_graph
 export AbstractScheme, CounterFactual, decide
+export AbstractArena, game, graph, scheme, Arena
 
 using StaticArrays
 using LightGraphs, LightGraphs.SimpleGraphs
@@ -179,5 +180,81 @@ end
 CounterFactual() = CounterFactual{Sigmoid}(Sigmoid())
 
 decide(cf::CounterFactual, s::Int, dp::Float64) = (rand() <= apply(cf.rule, dp)) ? (3 - s) : s
+
+"""
+    AbstractArena{Graph, Scheme}
+
+A supertype for all game-playing arenas.
+"""
+abstract type AbstractArena{Graph <: SimpleGraph, Scheme <: AbstractScheme} end
+
+"""
+    game(arena)
+
+The game the agents in the arena play
+"""
+game(a::AbstractArena) = a.game
+
+"""
+    graph(arena)
+
+The graph on which the agents play their games
+"""
+graph(a::AbstractArena) = a.graph
+
+"""
+    scheme(arena)
+
+The scheme the agents use to determine their next strategy
+"""
+scheme(a::AbstractArena) = a.scheme
+
+"""
+    length(arena)
+
+The number of agents in the arena
+"""
+Base.length(a::AbstractArena) = nv(graph(a))
+
+"""
+    edges(arena)
+
+The edges connecting agents in the arena
+"""
+LightGraphs.edges(a::AbstractArena) = edges(graph(a))
+
+"""
+    neighbors(arena, agent)
+
+A vector of the agent's neighbors
+"""
+LightGraphs.neighbors(a::AbstractArena, i) = neighbors(graph(a), i)
+
+"""
+    Arena(game, graph, scheme) <: AbstractArena
+
+An arena in which the agents, situated on the vertices of a graph, play a game with their neighbors.
+Every pair of agents plays the same game. With each round of play, the agents use the scheme to
+decide what their next strategy will be.
+
+In this arena, the agents accumulate payoff by playing with every neighbor. The decision of what
+strategy to use in the next time step is based on the difference between the total payoffs for each
+of the agents' strategies.
+"""
+struct Arena{Graph, Scheme} <: AbstractArena{Graph, Scheme}
+    game::Game
+    graph::Graph
+    scheme::Scheme
+    function Arena(ga::Game, gr::Graph, s::Scheme) where {Graph, Scheme}
+        if nv(gr) < 2
+            throw(DomainError(gr, "graph cannot be empty"))
+        elseif has_self_loops(gr)
+            throw(DomainError(gr, "graph cannot have self-loops"))
+        elseif any(map(c -> length(c) < 2, connected_components(gr)))
+            throw(DomainError(gr, "each component of the graph must have at least 2 elements"))
+        end
+        new{Graph, Scheme}(ga, gr, s)
+    end
+end
 
 end

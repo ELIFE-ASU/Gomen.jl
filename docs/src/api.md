@@ -23,3 +23,15 @@ AbstractScheme
 decide
 CounterFactual
 ```
+
+## Arena
+```@docs
+AbstractArena
+game
+graph
+scheme
+Base.length
+LightGraphs.edges
+LightGraphs.neighbors
+Arena
+```
