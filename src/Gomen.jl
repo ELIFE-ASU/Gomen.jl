@@ -3,9 +3,11 @@ module Gomen
 export Game, play
 export AbstractRule, apply, Sigmoid, Heaviside
 export barabasi_albert, erdos_renyi, wheel_graph, star_graph, lattice_graph
+export AbstractScheme, CounterFactual, decide
 
 using StaticArrays
 using LightGraphs, LightGraphs.SimpleGraphs
+using Random
 
 @doc raw"""
     Game(s, t)
@@ -108,5 +110,68 @@ end
 apply(h::Heaviside, dp::Float64) = (abs(dp) < h.ϵ) ? 0.5 : float(dp > 0)
 
 lattice_graph(m::Int, n::Int) = crosspath(m, path_graph(n))
+
+"""
+    AbstractScheme
+
+A supertype for all schemes, mechanisms for agents to choose their next strategy.
+"""
+abstract type AbstractScheme end
+
+"""
+    decide(scheme, ss::AbstractVector{Int}, ps::AbstractArray{Float64,2})
+
+Use the scheme to decide what each agent's strategy will be in the next timestep. Here `ss` is a
+vector of the agents' current strategies (one for each agent) and `ps` is a matrix of payoffs. Each
+column of `ps` should correspond to an agent, and each row is a corresponding strategy.
+"""
+function decide(scheme::AbstractScheme, ss::AbstractVector{Int}, ps::AbstractArray{Float64,2})
+    if !all(1 .<= ss .<= 2)
+        throw(ArgumentError("all strategies must be either 1 or 2"))
+    end
+    if length(ss) != size(ps, 2)
+        throw(ArgumentError("length(ss) ≠ size(ps, 2)"))
+    elseif size(ps, 1) != 2
+        throw(ArgumentError("size(ps, 1) ≠ 2"))
+    end
+    dps = Vector{Float64}(undef, length(ss))
+    for (i, s) in enumerate(ss)
+        dps[i] = ps[3 - s, i] - ps[s, i]
+    end
+    decide(scheme, ss, dps)
+end
+
+"""
+    decide(scheme, ss::AbstractVector{Int}, dps::AbstractVector{Float64})
+
+Use the scheme to decide what each agent's strategy will be in the next time step. Here `ss` is a
+vector of the agents' current strategies (one for each agent) and `dps` is a vector of the
+difference between the payoff for the strategy the agent didn't play and the payoff they actually
+received.
+
+
+    decide(scheme, s::Int, dp::Float64)
+
+Use the scheme to decide what an agent's strategy will be in the next time step. Here `s` is the
+agent's current strategy and `dp` is the difference between the payoff for the alternative strategy
+and the actual payoff they received. 
+"""
+function decide(scheme::AbstractScheme, ss::AbstractVector{Int}, dps::AbstractVector{Float64})
+    map((s,dp) -> decide(scheme, s, dp), ss, dps)
+end
+
+@doc raw"""
+    CounterFactural([rule = Sigmoid()])
+
+The "counter-factual" update scheme. Under this scheme, the agent will switch their strategy
+according to some probability. The probability the agent will switch is determined by applying the
+scheme's rule to the payoff difference.
+"""
+struct CounterFactual{Rule <: AbstractRule} <: AbstractScheme
+    rule::Rule
+end
+CounterFactual() = CounterFactual{Sigmoid}(Sigmoid())
+
+decide(cf::CounterFactual, s::Int, dp::Float64) = (rand() <= apply(cf.rule, dp)) ? (3 - s) : s
 
 end

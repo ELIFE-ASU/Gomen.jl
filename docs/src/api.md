@@ -16,3 +16,10 @@ apply
 Sigmoid
 Heaviside
 ```
+
+## Schemes
+```@docs
+AbstractScheme
+decide
+CounterFactual
+```
