@@ -2,8 +2,10 @@ module Gomen
 
 export Game, play
 export AbstractRule, apply, Sigmoid, Heaviside
+export barabasi_albert, erdos_renyi, wheel_graph, star_graph, lattice_graph
 
 using StaticArrays
+using LightGraphs, LightGraphs.SimpleGraphs
 
 @doc raw"""
     Game(s, t)
@@ -104,5 +106,7 @@ struct Heaviside <: AbstractRule
 end
 
 apply(h::Heaviside, dp::Float64) = (abs(dp) < h.ϵ) ? 0.5 : float(dp > 0)
+
+lattice_graph(m::Int, n::Int) = crosspath(m, path_graph(n))
 
 end
