@@ -154,7 +154,7 @@ received.
 
 Use the scheme to decide what an agent's strategy will be in the next time step. Here `s` is the
 agent's current strategy and `dp` is the difference between the payoff for the alternative strategy
-and the actual payoff they received. 
+and the actual payoff they received.
 """
 function decide(scheme::AbstractScheme, ss::AbstractVector{Int}, dps::AbstractVector{Float64})
     map((s,dp) -> decide(scheme, s, dp), ss, dps)
