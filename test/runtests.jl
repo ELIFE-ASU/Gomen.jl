@@ -1,4 +1,4 @@
-using Gomen, Test, StaticArrays, Base.MathConstants, Random
+using Gomen, Test, StaticArrays, Base.MathConstants, Random, LightGraphs
 
 @testset "Game" begin
     @testset "Construction" begin
@@ -133,5 +133,14 @@ end
             @test decide(cf, [2, 2], Float64[1 1; 0 0]) == [1, 1]
             @test decide(cf, [2, 2], Float64[1 0; 0 1]) == [1, 2]
         end
+    end
+end
+
+@testset "Lattice Graph" begin
+    @test_throws DomainError lattice_graph(0, 5)
+    @test_throws DomainError lattice_graph(5, 0)
+    @testset "Nodes and Edges" for nrows in 1:10, ncols in 1:10
+        @test nv(lattice_graph(nrows, ncols)) == nrows * ncols
+        @test ne(lattice_graph(nrows, ncols)) == 2 * nrows * ncols - nrows - ncols
     end
 end

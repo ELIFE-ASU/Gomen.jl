@@ -109,7 +109,13 @@ end
 
 apply(h::Heaviside, dp::Float64) = (abs(dp) < h.ϵ) ? 0.5 : float(dp > 0)
 
-lattice_graph(m::Int, n::Int) = crosspath(m, path_graph(n))
+lattice_graph(m::Int, n::Int) = if m < 1
+    throw(DomainError(m, "lattice must have at least 1 row"))
+elseif n < 1
+    throw(DomainError(m, "lattice must have at least 1 column"))
+else
+    crosspath(m, path_graph(n))
+end
 
 """
     AbstractScheme
