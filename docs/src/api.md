@@ -9,4 +9,10 @@ CurrentModule = Gomen
 Game
 play
 ```
-
+## Rules
+```@docs
+AbstractRule
+apply
+Sigmoid
+Heaviside
+```
