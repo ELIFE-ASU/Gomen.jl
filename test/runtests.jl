@@ -175,7 +175,7 @@ end
 
     @testset "payoffs" begin
         let arena = Arena(Game(0, 1), path_graph(2), CounterFactual())
-            @test_throws ArgumentError payoffs(arena, Int64[])
+            @test_throws ArgumentError payoffs(arena, Int[])
             @test_throws ArgumentError payoffs(arena, [1])
             @test_throws ArgumentError payoffs(arena, [1, 2, 1])
             @test_throws ArgumentError payoffs(arena, [0, 1])
