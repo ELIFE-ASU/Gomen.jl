@@ -34,4 +34,5 @@ Base.length
 LightGraphs.edges
 LightGraphs.neighbors
 Arena
+payoffs
 ```

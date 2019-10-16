@@ -172,4 +172,48 @@ end
             @test length(Arena(game, cycle_graph(10), scheme)) == 10
         end
     end
+
+    @testset "payoffs" begin
+        let arena = Arena(Game(0, 1), path_graph(2), CounterFactual())
+            @test_throws ArgumentError payoffs(arena, Int64[])
+            @test_throws ArgumentError payoffs(arena, [1])
+            @test_throws ArgumentError payoffs(arena, [1, 2, 1])
+            @test_throws ArgumentError payoffs(arena, [0, 1])
+            @test_throws ArgumentError payoffs(arena, [3, 1])
+
+            @test payoffs(arena, [1, 1]) == [1 1; 1 1]
+            @test payoffs(arena, [1, 2]) == [0 1; 0 1]
+            @test payoffs(arena, [2, 1]) == [1 0; 1 0]
+            @test payoffs(arena, [2, 2]) == [0 0; 0 0]
+        end
+
+        let arena = Arena(Game(0.25, 1.25), path_graph(2), CounterFactual())
+            @test payoffs(arena, [1, 1]) == [1.00 1.00; 1.25 1.25]
+            @test payoffs(arena, [1, 2]) == [0.25 1.00; 0.00 1.25]
+        end
+
+        let arena = Arena(Game(0.25, 1.25), lattice_graph(2, 2), CounterFactual())
+            @test payoffs(arena, [1, 1, 1, 1]) == [2.00 2.00 2.00 2.00; 2.50 2.50 2.50 2.50]
+            @test payoffs(arena, [1, 2, 1, 1]) == [1.25 2.00 2.00 1.25; 1.25 2.50 2.50 1.25]
+            @test payoffs(arena, [2, 2, 2, 2]) == [0.50 0.50 0.50 0.50; 0.00 0.00 0.00 0.00]
+        end
+    end
+
+    @testset "round" begin
+        println("Random Seed: ", Random.GLOBAL_RNG.seed)
+        Random.seed!(Random.GLOBAL_RNG.seed)
+
+        let arena = Arena(Game(0.25, 1.25), lattice_graph(2, 2), CounterFactual(Heaviside()))
+            N = 1000
+            σ(p) = sqrt(N*p*(1-p))
+            cond(p) = N*p - 3σ(p), N*p + 3σ(p)
+
+            @test play(arena, [1, 1, 1, 1]) == [2, 2, 2, 2]
+            @test play(arena, [2, 2, 2, 2]) == [1, 1, 1, 1]
+
+            a, b = cond(0.5)
+            dist = sum(Array{Int}(play(arena, [1, 2, 1, 1]) .== [1, 2, 2, 1]) for _ in 1:N)
+            @test all([a, N, N, a] .<= dist .<= [b, N, N, b])
+        end
+    end
 end

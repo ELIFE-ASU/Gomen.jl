@@ -4,7 +4,7 @@ export Game, play
 export AbstractRule, apply, Sigmoid, Heaviside
 export barabasi_albert, erdos_renyi, wheel_graph, star_graph, lattice_graph
 export AbstractScheme, CounterFactual, decide
-export AbstractArena, game, graph, scheme, Arena
+export AbstractArena, game, graph, scheme, Arena, payoffs
 
 using StaticArrays
 using LightGraphs, LightGraphs.SimpleGraphs
@@ -231,6 +231,13 @@ A vector of the agent's neighbors
 LightGraphs.neighbors(a::AbstractArena, i) = neighbors(graph(a), i)
 
 """
+    play(arena, strategies)
+
+Play one round of the game in the arena, returning the agents' next strategies.
+"""
+play(a::AbstractArena, ss::AbstractVector{Int}) = decide(scheme(a), ss, payoffs(a, ss))
+
+"""
     Arena(game, graph, scheme) <: AbstractArena
 
 An arena in which the agents, situated on the vertices of a graph, play a game with their neighbors.
@@ -255,6 +262,25 @@ struct Arena{Graph, Scheme} <: AbstractArena{Graph, Scheme}
         end
         new{Graph, Scheme}(ga, gr, s)
     end
+end
+
+"""
+    payoffs(arena, strategies)
+
+Determine the payoff of each agents' possible strategies given the strategies of all of the other
+agents.
+"""
+function payoffs(a::Arena, ss::AbstractVector{Int})
+    if length(ss) != length(a)
+        throw(ArgumentError("number of strategies should be the same as the number of agents"))
+    elseif !all(1 .<= ss .<= 2)
+        throw(ArgumentError("all strategies must be either 1 or 2"))
+    end
+    ps = zeros(Float64, 2, length(ss))
+    for i in 1:length(ss), j in neighbors(a, i), s in 1:2
+        ps[s, i] += play(game(a), s, ss[j])
+    end
+    ps
 end
 
 end
