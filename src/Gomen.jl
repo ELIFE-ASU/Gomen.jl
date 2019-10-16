@@ -283,4 +283,48 @@ function payoffs(a::Arena, ss::AbstractVector{Int})
     ps
 end
 
+"""
+    play(arena, rounds)
+
+Play the game in the arena repeatedly with the agents starting out with a random initial strategy.
+The result is a matrix of the agents strategies with `rounds` many rows, one for each round played.
+"""
+function play(a::AbstractArena, rounds::Int)
+    if rounds < 1
+        throw(DomainError(rounds, "must be at least 1"))
+    end
+
+    series = Array{Int}(undef, rounds, length(a))
+    series[1,:] = rand(1:2, length(a))
+    for i in 2:rounds
+        series[i,:] = play(a, @view series[i-1,:])
+    end
+    series
+end
+
+"""
+    play(arena, rounds, replicates)
+
+Starting from `replicates` many random initial strategies, play the game in the arena `rounds` many
+times. The result is a 3-D array of the agents strategies with the first two dimensions of size
+`replicates` and `rounds`, respectively.
+"""
+function play(a::AbstractArena, rounds::Int, replicates::Int)
+    if rounds < 1
+        throw(DomainError(rounds, "must be at least 1"))
+    end
+    if replicates < 1
+        throw(DomainError(replicates, "must be at least 1"))
+    end
+
+    series = Array{Int}(undef, replicates, rounds, length(a))
+    for i in 1:replicates
+        series[i,1,:] = rand(1:2, length(a))
+        for j in 2:rounds
+            series[i,j,:] = play(a, @view series[i,j-1,:])
+        end
+    end
+    series
+end
+
 end
