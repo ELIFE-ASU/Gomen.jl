@@ -8,6 +8,7 @@ CurrentModule = Gomen
 ```@docs
 Game
 play
+Games
 ```
 ## Rules
 ```@docs

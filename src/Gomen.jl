@@ -1,11 +1,12 @@
 module Gomen
 
-export Game, play
+export Game, Games, play
 export AbstractRule, apply, Sigmoid, Heaviside
 export barabasi_albert, erdos_renyi, wheel_graph, star_graph, lattice_graph
 export AbstractScheme, CounterFactual, decide
 export AbstractArena, game, graph, scheme, Arena, payoffs
 
+using Base.Iterators
 using StaticArrays
 using LightGraphs, LightGraphs.SimpleGraphs
 using Random
@@ -44,6 +45,43 @@ end
 Play the game with the strategies `a` and `b`, returning the payoff recieved by agent playing `a`.
 """
 play(g::Game, a::Int, b::Int) = g.payoffs[a, b]
+
+const GamesIterator = let ParameterRange = typeof(-0.5:0.1:0.5)
+    Iterators.ProductIterator{Tuple{ParameterRange, ParameterRange}}
+end
+
+"""
+    Games(sstep, tstep)
+
+An iterator over the games with ``S`` and ``T`` parameters varied over their ranges with the
+provided step sizes.
+"""
+struct Games
+    iterator::GamesIterator
+    Games(sstep, tstep) = let ss = -0.5:sstep:0.5, ts = 0.5:tstep:1.5
+        new(product(ss, ts))
+    end
+end
+
+Base.iterate(g::Games) = let iteree = iterate(g.iterator)
+    if isnothing(iteree)
+        iteree
+    else
+        element, state = iteree
+        Game(element...), state
+    end
+end
+
+Base.iterate(g::Games, state) = let iteree = iterate(g.iterator, state)
+    if isnothing(iteree)
+        iteree
+    else
+        element, state = iteree
+        Game(element...), state
+    end
+end
+
+Base.length(g::Games) = length(g.iterator)
 
 """
     AbstractRule

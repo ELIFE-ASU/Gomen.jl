@@ -24,6 +24,73 @@ using LightGraphs, LightGraphs.SimpleGraphs
     end
 end
 
+@testset "Games" begin
+    @testset "length" begin
+        @test length(Games(0.5, 0.5)) == 9
+        @test length(Games(0.1, 0.1)) == 121
+        @test length(Games(0.01, 0.01)) == 10201
+        @test length(Games(0.3, 0.3)) == 16
+    end
+
+    @testset "collect" begin
+        @test map(g -> g.payoffs, Games(1, 1)) == [
+                    SMatrix{2,2}([1.0 -0.5; 0.5 0.0]),
+                    SMatrix{2,2}([1.0  0.5; 0.5 0.0]),
+                    SMatrix{2,2}([1.0 -0.5; 1.5 0.0]),
+                    SMatrix{2,2}([1.0  0.5; 1.5 0.0])
+                ]
+
+        @test map(g -> g.payoffs, Games(0.5, 1)) == [
+                    SMatrix{2,2}([1.0 -0.5; 0.5 0.0]),
+                    SMatrix{2,2}([1.0  0.0; 0.5 0.0]),
+                    SMatrix{2,2}([1.0  0.5; 0.5 0.0]),
+                    SMatrix{2,2}([1.0 -0.5; 1.5 0.0]),
+                    SMatrix{2,2}([1.0  0.0; 1.5 0.0]),
+                    SMatrix{2,2}([1.0  0.5; 1.5 0.0])
+                ]
+
+        @test map(g -> g.payoffs, Games(1, 0.5)) == [
+                    SMatrix{2,2}([1.0 -0.5; 0.5 0.0]),
+                    SMatrix{2,2}([1.0  0.5; 0.5 0.0]),
+                    SMatrix{2,2}([1.0 -0.5; 1.0 0.0]),
+                    SMatrix{2,2}([1.0  0.5; 1.0 0.0]),
+                    SMatrix{2,2}([1.0 -0.5; 1.5 0.0]),
+                    SMatrix{2,2}([1.0  0.5; 1.5 0.0])
+                ]
+
+        @test map(g -> g.payoffs, Games(0.5, 0.5)) == [
+                    SMatrix{2,2}([1.0 -0.5; 0.5 0.0]),
+                    SMatrix{2,2}([1.0  0.0; 0.5 0.0]),
+                    SMatrix{2,2}([1.0  0.5; 0.5 0.0]),
+                    SMatrix{2,2}([1.0 -0.5; 1.0 0.0]),
+                    SMatrix{2,2}([1.0  0.0; 1.0 0.0]),
+                    SMatrix{2,2}([1.0  0.5; 1.0 0.0]),
+                    SMatrix{2,2}([1.0 -0.5; 1.5 0.0]),
+                    SMatrix{2,2}([1.0  0.0; 1.5 0.0]),
+                    SMatrix{2,2}([1.0  0.5; 1.5 0.0])
+                ]
+
+        @test map(g -> g.payoffs, Games(0.3, 0.3)) == [
+                    SMatrix{2,2}([1.0 -0.5; 0.5 0.0]),
+                    SMatrix{2,2}([1.0 -0.2; 0.5 0.0]),
+                    SMatrix{2,2}([1.0  0.1; 0.5 0.0]),
+                    SMatrix{2,2}([1.0  0.4; 0.5 0.0]),
+                    SMatrix{2,2}([1.0 -0.5; 0.8 0.0]),
+                    SMatrix{2,2}([1.0 -0.2; 0.8 0.0]),
+                    SMatrix{2,2}([1.0  0.1; 0.8 0.0]),
+                    SMatrix{2,2}([1.0  0.4; 0.8 0.0]),
+                    SMatrix{2,2}([1.0 -0.5; 1.1 0.0]),
+                    SMatrix{2,2}([1.0 -0.2; 1.1 0.0]),
+                    SMatrix{2,2}([1.0  0.1; 1.1 0.0]),
+                    SMatrix{2,2}([1.0  0.4; 1.1 0.0]),
+                    SMatrix{2,2}([1.0 -0.5; 1.4 0.0]),
+                    SMatrix{2,2}([1.0 -0.2; 1.4 0.0]),
+                    SMatrix{2,2}([1.0  0.1; 1.4 0.0]),
+                    SMatrix{2,2}([1.0  0.4; 1.4 0.0])
+                ]
+    end
+end
+
 @testset "Rule" begin
     @testset "Sigmoid" begin
         let points = [-1.0, -0.5, 0.0, 0.5, 1.0], p = sqrt(e), q = e^0.25
