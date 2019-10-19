@@ -50,18 +50,55 @@ function score(::Type{LaggedMutualInfoInference}, series::AbstractArray{Int, 2})
     scores
 end
 
-"""
-    infer(::Type{I}, series) where {I <: NetworkInference}
+const Scores = AbstractArray{Float64, 2}
 
-Infer edges in the network based on a given network inference method.
-"""
-function infer(::Type{I}, series::AbstractArray{Int, 2}) where {I <: NetworkInference}
-    N = size(series, 2)
-    scores = score(I, series)
+abstract type AbstractRescorer end
+
+struct CLRRescorer <: AbstractRescorer end
+
+function rescore(::CLRRescorer, scores::Scores)
+    N = size(scores, 1)
+    rescore = zeros(Float64, N, N)
+    for i in 1:N
+        for j in i-1:N
+            score = scores[i, j]
+            iscores = vcat((@view scores[1:i-1, i]), (@view scores[i+1:end, i]))
+            jscores = vcat((@view scores[1:j-1, j]), (@view scores[j+1:end, j]))
+
+            ibar = score - mean(iscores)
+            jbar = score - mean(jscores)
+            iσ2 = var(iscore)
+            jσ2 = var(jscore)
+
+            irescaled = (iσ2 == zero(iσ2) || ibar < zero(ibar)) ? zero(score) : ibar^2 / iσ2
+            jrescaled = (jσ2 == zero(jσ2) || jbar < zero(jbar)) ? zero(score) : jbar^2 / jσ2
+
+            rescore[i, j] = rescore[j, i] = sqrt(irescored + jrescored)
+        end
+    end
+    rescore
+end
+
+function edgeslist(scores::Scores)
+    N = size(scores, 1)
     edges = Edge[]
     for i in 1:N, j in i+1:N
         push!(edges, Edge(i, j, scores[i, j]))
     end
     sort!(edges; by = e -> e.evidence, rev = true)
     edges
+end
+
+"""
+    infer(::Type{I}, series[, rescorer]) where {I <: NetworkInference}
+
+Infer edges in the network based on a given network inference method.
+"""
+function infer(::Type{I}, series::AbstractArray{Int, 2}) where {I <: NetworkInference}
+    edgelist(score(I, series))
+end
+
+function infer(::Type{I}, series::AbstractArray{Int, 2},
+               rescorer::AbstractRescorer) where {I <: NetworkInference}
+    edge(rescore(rescorer, score(I, series)))
 end
