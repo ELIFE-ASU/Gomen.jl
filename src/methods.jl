@@ -29,8 +29,8 @@ struct LaggedMIMethod <: InferenceMethod end
 function score(::LaggedMIMethod, series::AbstractArray{Int, 2})
     N = size(series, 2)
     scores = Array{Float64}(undef, N, N)
-    for i in 1:N, j in i+1:N
-        scores[i, j] = scores[j, i] = abs(netmutualinfo(xs, ys; l=1))
+    @views for i in 1:N, j in i+1:N
+        scores[i, j] = scores[j, i] = abs(netmutualinfo(series[:, i], series[:, j]; l=1))
     end
     scores
 end
