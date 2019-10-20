@@ -51,7 +51,7 @@ struct Games
 end
 
 Base.iterate(g::Games) = let iteree = iterate(g.iterator)
-    if isnothing(iteree)
+    if iteree === nothing
         iteree
     else
         element, state = iteree
@@ -60,7 +60,7 @@ Base.iterate(g::Games) = let iteree = iterate(g.iterator)
 end
 
 Base.iterate(g::Games, state) = let iteree = iterate(g.iterator, state)
-    if isnothing(iteree)
+    if iteree === nothing
         iteree
     else
         element, state = iteree
