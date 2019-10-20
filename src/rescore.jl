@@ -6,18 +6,18 @@ A type alias for score matrices.
 const Scores = AbstractArray{Float64, 2}
 
 """
-    AbstractRescorer
+    Rescorer
 
 A supertype for all rescoring methods.
 """
-abstract type AbstractRescorer end
+abstract type Rescorer end
 
 """
     CLRRescorer
 
 A rescorer based on the mean and variance of all edges into and out of a pair of nodes.
 """
-struct CLRRescorer <: AbstractRescorer end
+struct CLRRescorer <: Rescorer end
 
 function rescore(::CLRRescorer, scores::Scores)
     N = size(scores, 1)

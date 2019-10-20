@@ -10,11 +10,11 @@ struct Edge
 end
 
 """
-    NetworkInference
+    InferenceMethod
 
 A supertype for all network inference types.
 """
-abstract type NetworkInference end
+abstract type InferenceMethod end
 
 """
     edgelist(scores)
@@ -31,16 +31,18 @@ function edgelist(scores::Scores)
     edges
 end
 
-"""
-    infer(::Type{I}, series[, rescorer]) where {I <: NetworkInference}
-
-Infer edges in the network based on a given network inference method.
-"""
-function infer(::Type{I}, series::AbstractArray{Int, 2}) where {I <: NetworkInference}
-    edgelist(score(I, series))
+function infer(method::InferenceMethod, series::AbstractArray{Int, 2})
+    edgelist(score(method, series))
 end
 
-function infer(::Type{I}, series::AbstractArray{Int, 2},
-               rescorer::AbstractRescorer) where {I <: NetworkInference}
+function infer(method::InferenceMethod, series::AbstractArray{Int, 2}, rescorer::Rescorer)
     edgelist(rescore(rescorer, score(I, series)))
+end
+
+function infer(method::InferenceMethod, arena::AbstractArena, rounds::Int)
+    infer(method, play(arena, rounds))
+end
+
+function infer(method::InferenceMethod, arena::AbstractArena, rounds::Int, rescorer::Rescorer)
+    infer(method, play(arena, rounds), rescorer)
 end

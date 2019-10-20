@@ -1,23 +1,16 @@
 """
-    BasicInference
-
-A supertype for all inference methods that do not consider statistical significance.
-"""
-abstract type BasicInference <: NetworkInference end
-
-"""
-    MutualInfoInference
+    MIMethod
 
 Infer based on the mutual information between pairs of nodes.
 """
-abstract type MutualInfoInference <: BasicInference end
+struct MIMethod <: InferenceMethod end
 
 """
-    score(::Type{I}, series) where {I <: BasicInference}
+    score(method, series)
 
 Create a score matrix from a time series using a basic inference method.
 """
-function score(::Type{MutualInfoInference}, series::AbstractArray{Int, 2})
+function score(::MIMethod, series::AbstractArray{Int, 2})
     N = size(series, 2)
     scores = Array{Float64}(undef, N, N)
     @views for i in 1:N, j in i+1:N
@@ -27,13 +20,13 @@ function score(::Type{MutualInfoInference}, series::AbstractArray{Int, 2})
 end
 
 """
-    LaggedMutualInfoInference
+    LaggedMIMethod
 
 Infer based on the net lagged mutual information between pairs of nodes.
 """
-abstract type LaggedMutualInfoInference <: BasicInference end
+struct LaggedMIMethod <: InferenceMethod end
 
-function score(::Type{LaggedMutualInfoInference}, series::AbstractArray{Int, 2})
+function score(::LaggedMIMethod, series::AbstractArray{Int, 2})
     N = size(series, 2)
     scores = Array{Float64}(undef, N, N)
     for i in 1:N, j in i+1:N
@@ -43,36 +36,36 @@ function score(::Type{LaggedMutualInfoInference}, series::AbstractArray{Int, 2})
 end
 
 """
-    SigInference
+    SignificanceMethod
 
 A supertype for all inference methods that consider statistical significance.
 """
-abstract type SigInference <: NetworkInference end
+abstract type SignificanceMethod <: InferenceMethod end
 
 """
-    nperms(method::SigInference)
+    nperms(method::SignificanceMethod)
 
 The number of permutations to use for significance testing
 """
-nperms(method::SigInference) = method.nperms
+nperms(method::SignificanceMethod) = method.nperms
 
 """
-    pvalue(method::SigInference)
+    pvalue(method::SignificanceMethod)
 
 The pvalue below which a value is considered significant
 """
-pvalue(method::SigInference) = method.pvalue
+pvalue(method::SignificanceMethod) = method.pvalue
 
 """
-    SigMutualInfoInference(nperms, pvalue)
+    SigMIMethod(nperms, pvalue)
 
 An inference method based on simple mutual information, considering the statistical signifiance.
 Only edges determined to be significant (p < pvalue) have non-zero evidence.
 """
-struct SigMutualInfoInference <: SigInference
+struct SigMIMethod <: SignificanceMethod
     nperms::Int
     pvalue::Float64
-    function SigMutualInfoInference(nperms, p)
+    function SigMIMethod(nperms, p)
         if !(zero(p) ≤ p ≤ one(p))
             throw(DomainError(p, "p-value must be in [0.0, 1.0]"))
         elseif nperms < 10
@@ -81,16 +74,11 @@ struct SigMutualInfoInference <: SigInference
         new(p, nperms)
     end
 end
-SigMutualInfoInference(p::Float64) = SigMutualInfoInference(1000, p)
-SigMutualInfoInference(nperms::Int) = SigMutualInfoInference(nperms, 0.05)
-SigMutualInfoInference() = SigMutualInfoInference(1000, 0.05)
+SigMIMethod(p::Float64) = SigMIMethod(1000, p)
+SigMIMethod(nperms::Int) = SigMIMethod(nperms, 0.05)
+SigMIMethod() = SigMIMethod(1000, 0.05)
 
-"""
-    score(method::I, series) where {I <: SigInference}
-
-Create a score matrix from a time series using a significance inference method.
-"""
-function score(method::SigMutualInfoInference, series::AbstractArray{Int, 2})
+function score(method::SigMIMethod, series::AbstractArray{Int, 2})
     N = size(series, 2)
     scores = zeros(Float64, N, N)
     @views for i in 1:N, j in i+1:N
@@ -101,15 +89,15 @@ function score(method::SigMutualInfoInference, series::AbstractArray{Int, 2})
 end
 
 """
-    SigLaggedMutualInfoInference(nperms, pvalue)
+    SigLaggedMIMethod(nperms, pvalue)
 
 An inference method based on 1-lagged mutual information, considering the statistical signifiance.
 Only edges determined to be significant (p < pvalue) have non-zero evidence.
 """
-struct SigLaggedMutualInfoInference <: SigInference
+struct SigLaggedMIMethod <: SignificanceMethod
     nperms::Int
     pvalue::Float64
-    function SigLaggedMutualInfoInference(nperms, p)
+    function SigLaggedMIMethod(nperms, p)
         if !(zero(p) ≤ p ≤ one(p))
             throw(DomainError(p, "p-value must be in [0.0, 1.0]"))
         elseif nperms < 10
@@ -118,11 +106,11 @@ struct SigLaggedMutualInfoInference <: SigInference
         new(p, nperms)
     end
 end
-SigLaggedMutualInfoInference(p::Float64) = SigLaggedMutualInfoInference(1000, p)
-SigLaggedMutualInfoInference(nperms::Int) = SigLaggedMutualInfoInference(nperms, 0.05)
-SigLaggedMutualInfoInference() = SigLaggedMutualInfoInference(1000, 0.05)
+SigLaggedMIMethod(p::Float64) = SigLaggedMIMethod(1000, p)
+SigLaggedMIMethod(nperms::Int) = SigLaggedMIMethod(nperms, 0.05)
+SigLaggedMIMethod() = SigLaggedMIMethod(1000, 0.05)
 
-function score(method::SigLaggedMutualInfoInference, series::AbstractArray{Int, 2})
+function score(method::SigLaggedMIMethod, series::AbstractArray{Int, 2})
     N = size(series, 2)
     scores = zeros(Float64, N, N)
     @views for i in 1:N, j in i+1:N
