@@ -10,11 +10,20 @@ struct MIMethod <: InferenceMethod end
 
 Create a score matrix from a time series using a basic inference method.
 """
-function score(::MIMethod, series::AbstractArray{Int, 2})
+function score(::MIMethod, series::AbstractMatrix{Int})
     N = size(series, 2)
     scores = Array{Float64}(undef, N, N)
     @views for i in 1:N, j in i+1:N
         scores[i, j] = scores[j, i] = mutualinfo(series[:, i], series[:, j])
+    end
+    scores
+end
+
+function score(::MIMethod, series::AbstractArray{Int, 3})
+    N = size(series, 3)
+    scores = Array{Float64}(undef, N, N)
+    @views for i in 1:N, j in i+1:N
+        scores[i, j] = scores[j, i] = mutualinfo(series[:, :, i], series[:, :, j])
     end
     scores
 end
@@ -26,11 +35,20 @@ Infer based on the net lagged mutual information between pairs of nodes.
 """
 struct LaggedMIMethod <: InferenceMethod end
 
-function score(::LaggedMIMethod, series::AbstractArray{Int, 2})
+function score(::LaggedMIMethod, series::AbstractMatrix{Int})
     N = size(series, 2)
     scores = Array{Float64}(undef, N, N)
     @views for i in 1:N, j in i+1:N
         scores[i, j] = scores[j, i] = abs(netmutualinfo(series[:, i], series[:, j]; l=1))
+    end
+    scores
+end
+
+function score(::LaggedMIMethod, series::AbstractArray{Int, 3})
+    N = size(series, 3)
+    scores = Array{Float64}(undef, N, N)
+    @views for i in 1:N, j in i+1:N
+        scores[i, j] = scores[j, i] = abs(netmutualinfo(series[:, :, i], series[:, :, j]; l=1))
     end
     scores
 end
@@ -78,11 +96,22 @@ SigMIMethod(p::Float64) = SigMIMethod(1000, p)
 SigMIMethod(nperms::Int) = SigMIMethod(nperms, 0.05)
 SigMIMethod() = SigMIMethod(1000, 0.05)
 
-function score(method::SigMIMethod, series::AbstractArray{Int, 2})
+function score(method::SigMIMethod, series::AbstractMatrix{Int})
     N = size(series, 2)
     scores = zeros(Float64, N, N)
     @views for i in 1:N, j in i+1:N
         score, p, _ = significance(mutualinfo, series[:, i], series[:, j]; nperms=nperms(method))
+        scores[i, j] = scores[j, i] = (p < pvalue(method)) ? zero(score) : score
+    end
+    scores
+end
+
+function score(method::SigMIMethod, series::AbstractArray{Int, 3})
+    N = size(series, 3)
+    scores = zeros(Float64, N, N)
+    @views for i in 1:N, j in i+1:N
+        score, p, _ = significance(mutualinfo, series[:, :, i], series[:, :, j];
+                                   nperms=nperms(method))
         scores[i, j] = scores[j, i] = (p < pvalue(method)) ? zero(score) : score
     end
     scores
@@ -110,11 +139,22 @@ SigLaggedMIMethod(p::Float64) = SigLaggedMIMethod(1000, p)
 SigLaggedMIMethod(nperms::Int) = SigLaggedMIMethod(nperms, 0.05)
 SigLaggedMIMethod() = SigLaggedMIMethod(1000, 0.05)
 
-function score(method::SigLaggedMIMethod, series::AbstractArray{Int, 2})
+function score(method::SigLaggedMIMethod, series::AbstractMatrix{Int})
     N = size(series, 2)
     scores = zeros(Float64, N, N)
     @views for i in 1:N, j in i+1:N
         score, p, _ = significance(netmutualinfo, series[:, i], series[:, j];
+                                   nperms=nperms(method), l=1)
+        scores[i, j] = scores[j, i] = (p < pvalue(method)) ? zero(score) : abs(score)
+    end
+    scores
+end
+
+function score(method::SigLaggedMIMethod, series::AbstractArray{Int, 3})
+    N = size(series, 3)
+    scores = zeros(Float64, N, N)
+    @views for i in 1:N, j in i+1:N
+        score, p, _ = significance(netmutualinfo, series[:, :, i], series[:, :, j];
                                    nperms=nperms(method), l=1)
         scores[i, j] = scores[j, i] = (p < pvalue(method)) ? zero(score) : abs(score)
     end

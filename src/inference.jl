@@ -30,11 +30,12 @@ function edgelist(scores::Scores)
     edges
 end
 
-function infer(method::InferenceMethod, series::AbstractArray{Int, 2})
+function infer(method::InferenceMethod, series::Union{AbstractMatrix{Int}, AbstractArray{Int, 3}})
     edgelist(score(method, series))
 end
 
-function infer(method::InferenceMethod, series::AbstractArray{Int, 2}, rescorer::Rescorer)
+function infer(method::InferenceMethod, series::Union{AbstractMatrix{Int}, AbstractArray{Int, 3}},
+               rescorer::Rescorer)
     edgelist(rescore(rescorer, score(method, series)))
 end
 
@@ -42,6 +43,15 @@ function infer(method::InferenceMethod, arena::AbstractArena, rounds::Int)
     infer(method, play(arena, rounds))
 end
 
+function infer(method::InferenceMethod, arena::AbstractArena, rounds::Int, replicates::Int)
+    infer(method, play(arena, rounds, replicates))
+end
+
 function infer(method::InferenceMethod, arena::AbstractArena, rounds::Int, rescorer::Rescorer)
     infer(method, play(arena, rounds), rescorer)
+end
+
+function infer(method::InferenceMethod, arena::AbstractArena, rounds::Int, replicates::Int,
+               rescorer::Rescorer)
+    infer(method, play(arena, rounds, replicates), rescorer)
 end
