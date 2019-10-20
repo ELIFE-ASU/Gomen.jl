@@ -71,7 +71,7 @@ struct SigMIMethod <: SignificanceMethod
         elseif nperms < 10
             throw(ArgumentError("number of permutations must be at least 10"))
         end
-        new(p, nperms)
+        new(nperms, p)
     end
 end
 SigMIMethod(p::Float64) = SigMIMethod(1000, p)
@@ -103,7 +103,7 @@ struct SigLaggedMIMethod <: SignificanceMethod
         elseif nperms < 10
             throw(ArgumentError("number of permutations must be at least 10"))
         end
-        new(p, nperms)
+        new(nperms, p)
     end
 end
 SigLaggedMIMethod(p::Float64) = SigLaggedMIMethod(1000, p)
