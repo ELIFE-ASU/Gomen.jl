@@ -116,7 +116,7 @@ function score(method::SigLaggedMIMethod, series::AbstractArray{Int, 2})
     @views for i in 1:N, j in i+1:N
         score, p, _ = significance(netmutualinfo, series[:, i], series[:, j];
                                    nperms=nperms(method), l=1)
-        scores[i, j] = scores[j, i] = (p < pvalue(method)) ? zero(score) : score
+        scores[i, j] = scores[j, i] = (p < pvalue(method)) ? zero(score) : abs(score)
     end
     scores
 end
