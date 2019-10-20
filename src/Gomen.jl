@@ -8,10 +8,9 @@ export AbstractArena, game, graph, scheme, Arena, payoffs
 export Scores, Edge, InferenceMethod, infer
 export MIMethod, LaggedMIMethod, SigMIMethod, SigLaggedMIMethod
 
-using Base.Iterators
+using Base.Iterators, Random, Statistics
 using StaticArrays
 using LightGraphs, LightGraphs.SimpleGraphs
-using Random
 
 include("games.jl")
 include("info.jl")

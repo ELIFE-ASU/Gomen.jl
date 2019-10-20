@@ -36,7 +36,7 @@ function infer(method::InferenceMethod, series::AbstractArray{Int, 2})
 end
 
 function infer(method::InferenceMethod, series::AbstractArray{Int, 2}, rescorer::Rescorer)
-    edgelist(rescore(rescorer, score(I, series)))
+    edgelist(rescore(rescorer, score(method, series)))
 end
 
 function infer(method::InferenceMethod, arena::AbstractArena, rounds::Int)
