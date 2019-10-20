@@ -27,7 +27,6 @@ function edgelist(scores::Scores)
     for i in 1:N, j in i+1:N
         push!(edges, Edge(i, j, scores[i, j]))
     end
-    sort!(edges; by = e -> e.evidence, rev = true)
     edges
 end
 
