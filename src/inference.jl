@@ -1,9 +1,9 @@
 """
-    Edge(src, dst, evidence)
+    EdgeEvidence(src, dst, evidence)
 
 An edge from src to dst with evidence that it exists.
 """
-struct Edge
+struct EdgeEvidence
     src::Int
     dst::Int
     evidence::Float64
@@ -23,11 +23,7 @@ Construct a weighted edge list from a scores matrix.
 """
 function edgelist(scores::Scores)
     N = size(scores, 1)
-    edges = Edge[]
-    for i in 1:N, j in i+1:N
-        push!(edges, Edge(i, j, scores[i, j]))
-    end
-    edges
+    [EdgeEvidence(i, j, scores[i, j]) for i in 1:N for j in i+1:N]
 end
 
 function infer(method::InferenceMethod, series::Union{AbstractMatrix{Int}, AbstractArray{Int, 3}})

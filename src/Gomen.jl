@@ -6,7 +6,7 @@ export barabasi_albert, erdos_renyi, wheel_graph, star_graph, lattice_graph
 export AbstractScheme, CounterFactual, decide
 export AbstractArena, game, graph, scheme, Arena, payoffs
 export Scores, Rescorer, GammaRescorer, CLRRescorer
-export Edge, InferenceMethod, infer
+export EdgeEvidence, InferenceMethod, infer
 export MIMethod, LaggedMIMethod, SigMIMethod, SigLaggedMIMethod
 
 using Base.Iterators, Random, Statistics
