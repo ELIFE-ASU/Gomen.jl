@@ -15,6 +15,7 @@ using StaticArrays
 using LightGraphs, LightGraphs.SimpleGraphs
 using Distributions
 using MLBase
+using RecipesBase
 
 include("games.jl")
 include("info.jl")
