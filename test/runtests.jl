@@ -284,3 +284,69 @@ end
         end
     end
 end
+
+@testset "ROC" begin
+    @testset "Construction" begin
+        @test fpr(ROC()) == [0.0, 1.0]
+        @test tpr(ROC()) == [0.0, 1.0]
+
+        @test_throws DimensionMismatch ROC([0.5], Float64[])
+        @test_throws DimensionMismatch ROC(Float64[], [0.5])
+
+        @test_throws ArgumentError ROC([0.1, 0.2], [0.5, 0.4])
+        @test_throws ArgumentError ROC([0.2, 0.1], [0.4, 0.5])
+
+        @test_throws ArgumentError ROC([-0.5, 0.5], [0.5, 0.8])
+        @test_throws ArgumentError ROC([0.5, -0.5], [0.8, 0.5])
+        @test_throws ArgumentError ROC([0.5, 0.8], [-0.5, 0.5])
+        @test_throws ArgumentError ROC([0.8, 0.5], [0.5, -0.5])
+
+        let r = ROC([0.3, 0.8], [0.5, 0.9])
+            @test length(fpr(r)) == length(tpr(r)) == 4
+            @test fpr(r)[1] ≈ tpr(r)[1] ≈ 0.0
+            @test fpr(r)[end] ≈ tpr(r)[end] ≈ 1.0
+            @test issorted(fpr(r))
+            @test issorted(tpr(r))
+        end
+
+        let r = ROC([0.8, 0.3], [0.9, 0.5])
+            @test fpr(r) ≈ [0.0, 0.3, 0.8, 1.0]
+            @test tpr(r) ≈ [0.0, 0.5, 0.9, 1.0]
+        end
+
+        let r = ROC([0.3, 0.8, 0.3], [0.5, 0.9, 0.5])
+            @test fpr(r) ≈ [0.0, 0.3, 0.8, 1.0]
+            @test tpr(r) ≈ [0.0, 0.5, 0.9, 1.0]
+        end
+
+        let r = ROC([0.3, 0.8, 0.3, 0.0], [0.5, 0.9, 0.5, 0.2])
+            @test fpr(r) ≈ [0.0, 0.0, 0.3, 0.8, 1.0]
+            @test tpr(r) ≈ [0.0, 0.2, 0.5, 0.9, 1.0]
+        end
+
+        let r = ROC([0.3, 0.8, 0.3, 0.2], [0.5, 0.9, 0.5, 0.0])
+            @test fpr(r) ≈ [0.0, 0.2, 0.3, 0.8, 1.0]
+            @test tpr(r) ≈ [0.0, 0.0, 0.5, 0.9, 1.0]
+        end
+
+        let r = ROC([0.3, 0.8, 0.3, 0.0], [0.5, 0.9, 0.5, 0.0])
+            @test fpr(r) ≈ [0.0, 0.3, 0.8, 1.0]
+            @test tpr(r) ≈ [0.0, 0.5, 0.9, 1.0]
+        end
+
+        let r = ROC([0.3, 1.0, 0.8, 0.3], [0.5, 0.95, 0.9, 0.5])
+            @test fpr(r) ≈ [0.0, 0.3, 0.8, 1.0, 1.0]
+            @test tpr(r) ≈ [0.0, 0.5, 0.9, 0.95, 1.0]
+        end
+
+        let r = ROC([0.3, 0.95, 0.8, 0.3], [0.5, 1.0, 0.9, 0.5])
+            @test fpr(r) ≈ [0.0, 0.3, 0.8, 0.95, 1.0]
+            @test tpr(r) ≈ [0.0, 0.5, 0.9, 1.0, 1.0]
+        end
+
+        let r = ROC([0.3, 1.0, 0.8, 0.3], [0.5, 1.0, 0.9, 0.5])
+            @test fpr(r) ≈ [0.0, 0.3, 0.8, 1.0]
+            @test tpr(r) ≈ [0.0, 0.5, 0.9, 1.0]
+        end
+    end
+end

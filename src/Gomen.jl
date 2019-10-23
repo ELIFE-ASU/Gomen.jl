@@ -8,7 +8,7 @@ export AbstractArena, game, graph, scheme, Arena, payoffs
 export Scores, Rescorer, GammaRescorer, CLRRescorer
 export EdgeEvidence, InferenceMethod, infer
 export MIMethod, LaggedMIMethod, SigMIMethod, SigLaggedMIMethod
-export ROC, roc, true_positive_rate, false_positive_rate
+export ROC, roc, tpr, fpr
 
 using Base.Iterators, Random, Statistics
 using StaticArrays
