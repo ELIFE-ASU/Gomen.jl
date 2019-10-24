@@ -7,8 +7,8 @@ struct ROC
             throw(DimensionMismatch("TPR and FPR vectors have different sizes"))
         end
 
-        if !issorted(fpr)
-            p = sortperm(fpr)
+        if !(issorted(fpr) && issorted(tpr))
+            p = sortperm(collect(zip(fpr, tpr)))
             fpr = fpr[p]
             tpr = tpr[p]
         end
