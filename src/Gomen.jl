@@ -1,6 +1,6 @@
 module Gomen
 
-export Game, Games, play
+export Game, sparam, tparam, play, Games
 export AbstractRule, apply, Sigmoid, Heaviside
 export barabasi_albert, erdos_renyi, wheel_graph, star_graph, lattice_graph
 export AbstractScheme, CounterFactual, decide

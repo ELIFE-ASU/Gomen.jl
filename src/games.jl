@@ -26,6 +26,10 @@ struct Game
     end
 end
 
+sparam(g::Game) = g.payoffs[1,2]
+
+tparam(g::Game) = g.payoffs[2,1]
+
 """
     play(g::Game, a, b)
 
@@ -33,7 +37,7 @@ Play the game with the strategies `a` and `b`, returning the payoff recieved by 
 """
 play(g::Game, a::Int, b::Int) = g.payoffs[a, b]
 
-JSON.lower(g::Game) = Dict("s" => g.payoffs[1,2], "t" => g.payoffs[2,1])
+JSON.lower(g::Game) = Dict("s" => sparam(g), "t" => tparam(g))
 
 restore(::Type{Game}, d::Dict{String, Any}) = Game(d["s"], d["t"])
 
