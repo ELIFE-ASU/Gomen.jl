@@ -16,6 +16,7 @@ using LightGraphs, LightGraphs.SimpleGraphs
 using Distributions
 using MLBase
 using RecipesBase
+using JSON
 
 include("games.jl")
 include("info.jl")

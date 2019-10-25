@@ -33,6 +33,8 @@ Play the game with the strategies `a` and `b`, returning the payoff recieved by 
 """
 play(g::Game, a::Int, b::Int) = g.payoffs[a, b]
 
+JSON.lower(g::Game) = Dict("s" => g.payoffs[1,2], "t" => g.payoffs[2,1])
+
 const GamesIterator = let ParameterRange = typeof(-0.5:0.1:0.5)
     Iterators.ProductIterator{Tuple{ParameterRange, ParameterRange}}
 end
