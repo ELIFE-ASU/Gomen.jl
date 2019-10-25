@@ -10,7 +10,7 @@ export EdgeEvidence, InferenceMethod, infer
 export MIMethod, LaggedMIMethod, SigMIMethod, SigLaggedMIMethod
 export ROC, roc, tpr, fpr, auc
 
-using Base.Iterators, LinearAlgebra, Random, Statistics
+using Base.Iterators, Base.Meta, LinearAlgebra, Random, Statistics
 using StaticArrays
 using LightGraphs, LightGraphs.SimpleGraphs
 using Distributions

@@ -35,6 +35,8 @@ play(g::Game, a::Int, b::Int) = g.payoffs[a, b]
 
 JSON.lower(g::Game) = Dict("s" => g.payoffs[1,2], "t" => g.payoffs[2,1])
 
+restore(::Type{Game}, d::Dict{String, Any}) = Game(d["s"], d["t"])
+
 const GamesIterator = let ParameterRange = typeof(-0.5:0.1:0.5)
     Iterators.ProductIterator{Tuple{ParameterRange, ParameterRange}}
 end
@@ -79,6 +81,25 @@ A supertype for all decision rules.
 """
 abstract type AbstractRule end
 
+function JSON.lower(r::AbstractRule)
+    T = typeof(r)
+    d = Dict{String,Any}("type" => string(T))
+    for field in fieldnames(T)
+        d[string(field)] = getfield(r, field)
+    end
+    d
+end
+
+function restore(::Type{AbstractRule}, d::Dict{String,Any})
+    r = eval(Meta.parse(d["type"]))()
+    for (field, value) in d
+        if field !== "type"
+            setfield!(r, Meta.parse(field), value)
+        end
+    end
+    r
+end
+
 """
     apply(r::AbstractRule, dp)
 
@@ -98,7 +119,7 @@ P(dp) = \frac{1}{1 + e^{-\beta dp}}
 
 where ``dp`` is the difference in the two payoffs.
 """
-struct Sigmoid <: AbstractRule
+mutable struct Sigmoid <: AbstractRule
     β::Float64
     function Sigmoid(β::Float64 = 1.0)
         if β < zero(β)
@@ -125,7 +146,7 @@ P(dp) = \begin{cases}
 
 where ``dp`` is the difference in the two payoffs.
 """
-struct Heaviside <: AbstractRule
+mutable struct Heaviside <: AbstractRule
     ϵ::Float64
     function Heaviside(ϵ::Float64 = 1e-3)
         if ϵ < zero(ϵ)
@@ -151,6 +172,14 @@ end
 A supertype for all schemes, mechanisms for agents to choose their next strategy.
 """
 abstract type AbstractScheme end
+
+function JSON.lower(s::AbstractScheme)
+    Dict{String,Any}("type" => string(typeof(s)), "rule" => JSON.lower(s.rule))
+end
+
+function restore(::Type{AbstractScheme}, d::Dict{String, Any})
+    eval(Meta.parse(d["type"]))(restore(AbstractRule, d["rule"]))
+end
 
 """
     decide(scheme, ss::AbstractVector{Int}, ps::AbstractArray{Float64,2})
@@ -256,6 +285,31 @@ LightGraphs.edges(a::AbstractArena) = edges(graph(a))
 A vector of the agent's neighbors
 """
 LightGraphs.neighbors(a::AbstractArena, i) = neighbors(graph(a), i)
+
+function JSON.lower(g::Graph) where {Graph <: SimpleGraph}
+    Dict{String,Any}("type" => string(typeof(g)),
+                     "edges" => map(e -> (e.src, e.dst), edges(g)))
+end
+
+function restore(::Type{Graph}, d::Dict{String,Any}) where {Graph <: SimpleGraph}
+    G = eval(first(Meta.parse(d["type"]).args))
+    G(map(e -> Edge(e[1], e[2]), d["edges"]))
+end
+
+function JSON.lower(a::AbstractArena)
+    Dict{String, Any}("type" => string(typeof(a)),
+                      "game" => JSON.lower(game(a)),
+                      "graph" => JSON.lower(graph(a)),
+                      "scheme" => JSON.lower(scheme(a)))
+end
+
+function restore(::Type{AbstractArena}, d::Dict{String,Any})
+    A = eval(first(Meta.parse(d["type"]).args))
+    game = restore(Game, d["game"])
+    graph = restore(SimpleGraph, d["graph"])
+    scheme = restore(AbstractScheme, d["scheme"])
+    A(game, graph, scheme)
+end
 
 """
     play(arena, strategies)
