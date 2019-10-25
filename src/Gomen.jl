@@ -8,9 +8,9 @@ export AbstractArena, game, graph, scheme, Arena, payoffs
 export Scores, Rescorer, GammaRescorer, CLRRescorer
 export EdgeEvidence, InferenceMethod, infer
 export MIMethod, LaggedMIMethod, SigMIMethod, SigLaggedMIMethod
-export ROC, roc, tpr, fpr
+export ROC, roc, tpr, fpr, auc
 
-using Base.Iterators, Random, Statistics
+using Base.Iterators, LinearAlgebra, Random, Statistics
 using StaticArrays
 using LightGraphs, LightGraphs.SimpleGraphs
 using Distributions

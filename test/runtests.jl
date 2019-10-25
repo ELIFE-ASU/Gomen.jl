@@ -391,4 +391,15 @@ end
             @test tpr(μ1) ≈ tpr(μ2) ≈ [0.0, 0.2125, 0.4, 0.7125, 1.0]
         end
     end
+
+    @testset "AUC" begin
+        @test auc(ROC()) ≈ 0.5
+        @test auc(ROC([0.5], [0.5])) ≈ 0.5
+        @test auc(ROC([0.25, 0.6], [0.25, 0.6])) ≈ 0.5
+
+        @test auc(ROC([0.5], [0.0])) ≈ 0.25
+        @test auc(ROC([0.5], [1.0])) ≈ 0.75
+
+        @test auc(ROC([0.2, 0.3, 0.8, 0.9], [0.1, 0.4, 0.85, 0.95])) ≈ 0.5350
+    end
 end

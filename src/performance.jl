@@ -59,6 +59,8 @@ function downsample(xs::AbstractVector{Float64}, ys::AbstractVector{Float64})
     keep
 end
 
+Base.length(r::ROC) = length(fpr(r))
+
 struct Curve
     xs::Vector{Float64}
     ys::Vector{Float64}
@@ -112,6 +114,8 @@ function MLBase.roc(arena::AbstractArena, edges::Vector{EdgeEvidence}, args...)
     r = roc(gt, scores, args...)
     ROC(map(false_positive_rate, r), map(true_positive_rate, r))
 end
+
+auc(r::ROC) = @views dot(r.tpr[2:end] + r.tpr[1:end-1], r.fpr[2:end] - r.fpr[1:end-1]) / 2.0
 
 @recipe function plotroc(r::ROC)
    legend := false
