@@ -37,9 +37,11 @@ Play the game with the strategies `a` and `b`, returning the payoff recieved by 
 """
 play(g::Game, a::Int, b::Int) = g.payoffs[a, b]
 
-JSON.lower(g::Game) = Dict("s" => sparam(g), "t" => tparam(g))
+Base.show(io::IO, g::Game) = print(io, "Game($(sparam(g)), $(tparam(g)))")
 
-restore(::Type{Game}, d::Dict{String, Any}) = Game(d["s"], d["t"])
+JSON.lower(g::Game) = string(g)
+
+restore(::Type{Game}, j::AbstractString) = eval(Meta.parse(j))
 
 const GamesIterator = let ParameterRange = typeof(-0.5:0.1:0.5)
     Iterators.ProductIterator{Tuple{ParameterRange, ParameterRange}}
@@ -85,24 +87,9 @@ A supertype for all decision rules.
 """
 abstract type AbstractRule end
 
-function JSON.lower(r::AbstractRule)
-    T = typeof(r)
-    d = Dict{String,Any}("type" => string(T))
-    for field in fieldnames(T)
-        d[string(field)] = getfield(r, field)
-    end
-    d
-end
+JSON.lower(r::AbstractRule) = string(r)
 
-function restore(::Type{AbstractRule}, d::Dict{String,Any})
-    r = eval(Meta.parse(d["type"]))()
-    for (field, value) in d
-        if field !== "type"
-            setfield!(r, Meta.parse(field), value)
-        end
-    end
-    r
-end
+restore(::Type{AbstractRule}, j::AbstractString) = eval(Meta.parse(j))
 
 """
     apply(r::AbstractRule, dp)
@@ -123,7 +110,7 @@ P(dp) = \frac{1}{1 + e^{-\beta dp}}
 
 where ``dp`` is the difference in the two payoffs.
 """
-mutable struct Sigmoid <: AbstractRule
+struct Sigmoid <: AbstractRule
     β::Float64
     function Sigmoid(β::Float64 = 1.0)
         if β < zero(β)
@@ -150,7 +137,7 @@ P(dp) = \begin{cases}
 
 where ``dp`` is the difference in the two payoffs.
 """
-mutable struct Heaviside <: AbstractRule
+struct Heaviside <: AbstractRule
     ϵ::Float64
     function Heaviside(ϵ::Float64 = 1e-3)
         if ϵ < zero(ϵ)
@@ -177,13 +164,9 @@ A supertype for all schemes, mechanisms for agents to choose their next strategy
 """
 abstract type AbstractScheme end
 
-function JSON.lower(s::AbstractScheme)
-    Dict{String,Any}("type" => string(typeof(s)), "rule" => JSON.lower(s.rule))
-end
+JSON.lower(s::AbstractScheme) = string(s)
 
-function restore(::Type{AbstractScheme}, d::Dict{String, Any})
-    eval(Meta.parse(d["type"]))(restore(AbstractRule, d["rule"]))
-end
+restore(::Type{AbstractScheme}, j::AbstractString) = eval(Meta.parse(j))
 
 """
     decide(scheme, ss::AbstractVector{Int}, ps::AbstractArray{Float64,2})
