@@ -1,5 +1,5 @@
 using Gomen
-using Base.MathConstants, Random, Test
+using Base.MathConstants, Random, Statistics, Test
 using StaticArrays
 using LightGraphs, LightGraphs.SimpleGraphs
 
@@ -301,6 +301,11 @@ end
         @test_throws ArgumentError ROC([0.5, 0.8], [-0.5, 0.5])
         @test_throws ArgumentError ROC([0.8, 0.5], [0.5, -0.5])
 
+        @test_throws ArgumentError ROC([0.5, 2.0], [0.5, 0.8])
+        @test_throws ArgumentError ROC([2.0, 0.5], [0.8, 0.5])
+        @test_throws ArgumentError ROC([0.5, 0.8], [0.5, 2.0])
+        @test_throws ArgumentError ROC([0.8, 0.5], [2.0, 0.5])
+
         let r = ROC([0.3, 0.8], [0.5, 0.9])
             @test length(fpr(r)) == length(tpr(r)) == 4
             @test fpr(r)[1] ≈ tpr(r)[1] ≈ 0.0
@@ -352,6 +357,38 @@ end
         let r = ROC([0.3, 0.3, 0.4, 0.4], [0.4, 0.2, 0.8, 0.6])
             @test fpr(r) ≈ [0.0, 0.3, 0.3, 0.4, 0.4, 1.0]
             @test tpr(r) ≈ [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
+        end
+    end
+
+    @testset "mean" begin
+        let r = ROC(), s = ROC()
+            μ = mean([r, s])
+            @test fpr(μ) ≈ [0.0, 1.0]
+            @test tpr(μ) ≈ [0.0, 1.0]
+        end
+
+        let r = ROC(), s = ROC([0.5], [0.5])
+            μ1, μ2 = mean([r, s]), mean([s, r])
+            @test fpr(μ1) ≈ fpr(μ2) ≈ [0.0, 0.5, 1.0]
+            @test tpr(μ1) ≈ tpr(μ2) ≈ [0.0, 0.5, 1.0]
+        end
+
+        let r = ROC(), s = ROC([0.5], [0.0])
+            μ1, μ2 = mean([r, s]), mean([s, r])
+            @test fpr(μ1) ≈ fpr(μ2) ≈ [0.0, 0.5, 1.0]
+            @test tpr(μ1) ≈ tpr(μ2) ≈ [0.0, 0.25, 1.0]
+        end
+
+        let r = ROC([0.5], [0.0]), s = ROC([0.5], [0.5])
+            μ1, μ2 = mean([r, s]), mean([s, r])
+            @test fpr(μ1) ≈ fpr(μ2) ≈ [0.0, 0.5, 1.0]
+            @test tpr(μ1) ≈ tpr(μ2) ≈ [0.0, 0.25, 1.0]
+        end
+
+        let r = ROC([0.25, 0.75], [0.3, 0.8]), s = ROC([0.5], [0.25])
+            μ1, μ2 = mean([r, s]), mean([s, r])
+            @test fpr(μ1) ≈ fpr(μ2) ≈ [0.0, 0.25, 0.5, 0.75, 1.0]
+            @test tpr(μ1) ≈ tpr(μ2) ≈ [0.0, 0.2125, 0.4, 0.7125, 1.0]
         end
     end
 end

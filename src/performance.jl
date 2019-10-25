@@ -49,14 +49,60 @@ fpr(r::ROC) = r.fpr
 
 tpr(r::ROC) = r.tpr
 
-function downsample(xs::AbstractVector, ys::AbstractVector)
+function downsample(xs::AbstractVector{Float64}, ys::AbstractVector{Float64})
     keep = [1]
     for i in 2:length(xs)
-        if xs[i] != xs[i-1] || ys[i] != ys[i-1]
+        if !(xs[i] ≈ xs[i-1] && ys[i] ≈ ys[i-1])
             push!(keep, i)
         end
     end
     keep
+end
+
+struct Curve
+    xs::Vector{Float64}
+    ys::Vector{Float64}
+    function Curve(xs::AbstractVector{Float64}, ys::AbstractVector{Float64})
+        if length(xs) != length(ys)
+            throw(DimensionMismatch("the x- and y-position vectors must have the same length"))
+        end
+        new(xs, ys)
+    end
+end
+
+Base.length(c::Curve) = length(c.xs)
+
+function Base.:+(a::Curve, b::Curve)
+    xs, ys = Float64[], Float64[]
+    i, j = 1, 1
+    @views while i <= length(a) && j <= length(b)
+        if a.xs[i] ≈ b.xs[j]
+            push!(xs, a.xs[i])
+            push!(ys, a.ys[i] + b.ys[j])
+            i += 1
+            j += 1
+        elseif a.xs[i] < b.xs[j]
+            push!(xs, a.xs[i])
+            push!(ys, a.ys[i] + interpolate(b.xs[j-1:j], b.ys[j-1:j], a.xs[i]))
+            i += 1
+        else
+            push!(xs, b.xs[j])
+            push!(ys, b.ys[j] + interpolate(a.xs[i-1:i], a.ys[i-1:i], b.xs[j]))
+            j += 1
+        end
+    end
+    Curve(xs, ys)
+end
+
+function interpolate(xs::AbstractVector{Float64}, ys::AbstractVector{Float64}, x::Float64)
+    m = (ys[2] - ys[1]) / (xs[2] - xs[1])
+    m * (x - xs[1]) + ys[1]
+end
+
+Base.:/(c::Curve, k::Number) = Curve(c.xs, c.ys / k)
+
+Statistics.mean(rocs::AbstractVector{ROC}) = let c = mean(map(r -> Curve(fpr(r), tpr(r)), rocs))
+    ROC(c.xs, c.ys)
 end
 
 function MLBase.roc(arena::AbstractArena, edges::Vector{EdgeEvidence}, args...)
