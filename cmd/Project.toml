@@ -1,0 +1,10 @@
+[deps]
+AWSS3 = "1c724243-ef5b-51ab-93f4-b0a88ac62a95"
+Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
+DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
+GZip = "92fee26a-97fe-5a0c-ad85-20a5f3185b63"
+Gomen = "96b78620-ec9c-11e9-2683-a967ce6b552f"
+JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
+LightGraphs = "093fc24a-ae57-5d10-9952-331d41423f4d"
+Logging = "56ddb016-857b-54e1-b83d-db4d58db5568"
+ProgressMeter = "92933f4c-e287-5a05-a399-4b506db050ca"
