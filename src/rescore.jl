@@ -59,22 +59,26 @@ GammaRescorer(agg::Function) = GammaRescorer(eps(Float64), agg)
 GammaRescorer(ϵ::Float64) = GammaRescorer(ϵ, (p, q) -> p + q)
 
 function rescore(gr::GammaRescorer, scores::Scores)
-    N = size(scores, 1)
-    rescore = zeros(Float64, N, N)
-    for i in 1:N
-        for j in i+1:N
-            score = scores[i, j]
-            iscores = vcat((@view scores[1:i-1, i]), (@view scores[i+1:end, i]))
-            jscores = vcat((@view scores[1:j-1, j]), (@view scores[j+1:end, j]))
+    try
+        N = size(scores, 1)
+        rescore = zeros(Float64, N, N)
+        for i in 1:N
+            for j in i+1:N
+                score = scores[i, j]
+                iscores = vcat((@view scores[1:i-1, i]), (@view scores[i+1:end, i]))
+                jscores = vcat((@view scores[1:j-1, j]), (@view scores[j+1:end, j]))
 
-            iscores[iscores .== zero(Float64)] .= gr.ϵ
-            jscores[jscores .== zero(Float64)] .= gr.ϵ
+                iscores[iscores .== zero(Float64)] .= gr.ϵ
+                jscores[jscores .== zero(Float64)] .= gr.ϵ
 
-            p = cdf(fit(Gamma, iscores), score)
-            q = cdf(fit(Gamma, jscores), score)
+                p = cdf(fit(Gamma, iscores), score)
+                q = cdf(fit(Gamma, jscores), score)
 
-            rescore[i, j] = rescore[j, i] = gr.aggregator(p, q)
+                rescore[i, j] = rescore[j, i] = gr.aggregator(p, q)
+            end
         end
+        rescore
+    catch
+        rescore(CLRRescorer(), scores)
     end
-    rescore
 end
