@@ -47,7 +47,7 @@ function simulate(gen::GraphGenerator, schemes, games, rounds, replicates, tmpdi
     for graph in gen
         gendir = joinpath(outdir, string(param(gen)))
         mkpath(gendir)
-        f = remotecall(simulate, pool, graph, schemes, games, rounds, replicates, tmpdir, gendir)
+        f = @spawn simulate(graph, schemes, games, rounds, replicates, tmpdir, gendir)
         push!(futures, f)
     end
     foreach(wait, futures)
@@ -62,8 +62,7 @@ function simulate(graphs, schemes, games, rounds, replicates, datadir)
         for graph in gen
             graphdir = joinpath(datadir, name, string(nv(graph)))
             mkpath(graphdir)
-            f = remotecall(simulate, pool, graph, schemes, games, rounds, replicates, tmpdir,
-                           graphdir)
+            f = @spawn simulate(graph, schemes, games, rounds, replicates, tmpdir, graphdir)
             push!(futures, f)
         end
     end

@@ -1,9 +1,5 @@
 using Distributed
 
-addprocs(4)
-
-@everywhere pool = default_worker_pool()
-
 @everywhere begin
     using Pkg
     Pkg.activate(".")
