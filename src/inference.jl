@@ -7,6 +7,11 @@ struct EdgeEvidence
     src::Int
     dst::Int
     evidence::Float64
+    EdgeEvidence(src, dst, evidence) = if isnan(evidence)
+        throw(DomainError(evidence, "cannot be NaN"))
+    else
+        new(src, dst, evidence)
+    end
 end
 
 """
