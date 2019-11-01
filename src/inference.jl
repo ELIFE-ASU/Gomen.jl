@@ -14,6 +14,10 @@ struct EdgeEvidence
     end
 end
 
+JSON.lower(e::EdgeEvidence) = string(e)
+
+restore(::Type{EdgeEvidence}, j::AbstractString) = eval(Meta.parse(j))
+
 """
     InferenceMethod
 
