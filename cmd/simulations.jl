@@ -1,18 +1,9 @@
-using Base.Meta, Dates, Logging, DelimitedFiles
-using Gomen, GZip, JSON, ProgressMeter
-
-function mktempgz(parent=tempdir())
-    filename, io = mktemp(parent)
-    close(io)
-    filename, GZip.open(filename, "w")
-end
-
 function simulate(graph::SimpleGraph, scheme::AbstractScheme, game, rounds, replicates,
                   tmpdir, outdir)
     s, t = sparam(game), tparam(game)
 
-    arenafile = joinpath(outdir, "$(s)_$(t).arena")
-    seriesfile = joinpath(outdir, "$(s)_$(t).series")
+    arenafile = joinpath(outdir, "$(s)_$(t).arena.gz")
+    seriesfile = joinpath(outdir, "$(s)_$(t).series.gz")
 
     arena = Arena(game, graph, scheme)
     series = play(arena, rounds, replicates)
@@ -53,22 +44,29 @@ function simulate(gen::GraphGenerator, schemes, games, rounds, replicates, tmpdi
     foreach(wait, futures)
 end
 
-function simulate(graphs, schemes, games, rounds, replicates, datadir)
-    tmpdir = joinpath(datadir, "tmp")
-    mkpath(tmpdir)
-
-    futures = Future[]
-    for (name, gen) in graphs
-        for graph in gen
-            graphdir = joinpath(datadir, name, string(nv(graph)))
-            mkpath(graphdir)
-            f = @spawn simulate(graph, schemes, games, rounds, replicates, tmpdir, graphdir)
-            push!(futures, f)
-        end
+function simulate(graphs, schemes, games, rounds, replicates, datadir; force=false)
+    datadir = joinpath(datadir, "sims")
+    if force
+        rm(datadir; force=true, recursive=true)
     end
+    if !ispath(datadir)
+        tmpdir = joinpath(datadir, "tmp")
+        mkpath(tmpdir)
 
-    foreach(wait, futures)
-    rm(tmpdir; recursive=true)
+        futures = Future[]
+        for (name, gen) in graphs
+            for graph in gen
+                graphdir = joinpath(datadir, name, string(nv(graph)))
+                mkpath(graphdir)
+                f = @spawn simulate(graph, schemes, games, rounds, replicates, tmpdir, graphdir)
+                push!(futures, f)
+            end
+        end
 
+        foreach(wait, futures)
+        rm(tmpdir; recursive=true)
+    else
+        @warn "The simulation directory \"$datadir\" already exists; skipping simulations..."
+    end
     datadir
 end

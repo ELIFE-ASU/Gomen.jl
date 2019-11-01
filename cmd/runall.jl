@@ -1,11 +1,17 @@
-using Distributed
+using Distributed, Dates
+
+@everywhere const ARENA_EXT = ".arena.gz"
+@everywhere const SERIES_EXT = ".series.gz"
+@everywhere const INFERENCE_EXT = ".inference.gz"
 
 @everywhere begin
     using Pkg
     Pkg.activate(".")
 end
 
+@everywhere include("util.jl")
 @everywhere include("simulations.jl")
+@everywhere include("inference.jl")
 
 function getdatadir(outdir)
     version = 1
@@ -17,11 +23,22 @@ function getdatadir(outdir)
     datadir * "v$version"
 end
 
-function main()
-    N = 10
+harmonicmean(p::Float64, q::Float64) = if p != zero(p) && q != zero(q)
+    2*p*q / (p + q)
+else
+    zero(p)*zero(q)
+end
+
+function main(datadir=getdatadir("data"); forcesim=false, forceinf=false)
+    N = 1
     nodes = [10]
     ks = [1]
     ps = [0.5]
+
+    rounds = 10
+    replicates = 10
+
+    nperm = 100
 
     graphs = Dict(
         "cycle" => (cycle_graph(n) for n in nodes),
@@ -31,14 +48,26 @@ function main()
         "erdos-renyi" => (ErdosRenyiGenerator(N, n, p) for n in nodes for p in ps),
     )
     schemes = CounterFactual.([Sigmoid(), Sigmoid(0.1), Sigmoid(10.), Heaviside()])
-    games = Games(0.1, 0.1)
+    games = Games(0.5, 0.5)
 
-    datadir = getdatadir("data")
+    methods = Dict(
+        "mutual info" => MIMethod(),
+        "lagged mutual info" => LaggedMIMethod(),
+        "significant mutual info" => SigMIMethod(nperm),
+        "significant lagged mutual info" => SigLaggedMIMethod(nperm)
+    )
+
+    rescorers = Dict(
+        "clr rescorer" => CLRRescorer(),
+        "Γ rescorer" => GammaRescorer(),
+        "harmonic Γ rescorer" => GammaRescorer(harmonicmean)
+    )
 
     @info "Saving data in \"$datadir\""
 
     @info "Running simulations..."
-    @time simulate(graphs, schemes, games, 10, 10, datadir)
-end
+    @time simulate(graphs, schemes, games, rounds, replicates, datadir; force=forcesim)
 
-main()
+    @info "Inferring networks..."
+    @time infernetworks(methods, rescorers, datadir; force=forceinf)
+end
