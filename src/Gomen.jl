@@ -10,6 +10,7 @@ export Scores, Rescorer, GammaRescorer, CLRRescorer
 export EdgeEvidence, InferenceMethod, infer
 export MIMethod, LaggedMIMethod, SigMIMethod, SigLaggedMIMethod
 export ROC, roc, tpr, fpr, auc
+export restore
 
 using Base.Iterators, Base.Meta, LinearAlgebra, Random, Statistics
 using StaticArrays
