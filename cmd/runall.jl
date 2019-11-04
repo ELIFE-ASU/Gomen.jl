@@ -1,0 +1,3 @@
+include("gomen.jl")
+
+gomen()
