@@ -23,13 +23,13 @@ function getdatadir(outdir)
     datadir * "v$version"
 end
 
-harmonicmean(p::Float64, q::Float64) = if p != zero(p) && q != zero(q)
+@everywhere harmonicmean(p::Float64, q::Float64) = if p != zero(p) && q != zero(q)
     2*p*q / (p + q)
 else
     zero(p)*zero(q)
 end
 
-function main(datadir=getdatadir("data"); forcesim=false, forceinf=false)
+function gomen(; datadir=getdatadir("data"), forcesim=false, forceinf=false)
     N = 1
     nodes = [10]
     ks = [1]
