@@ -1,7 +1,5 @@
 function infernetworks(methods, rescorers, arenapath, arena, series, tmpdir, inferencedir)
-    simname = replace(basename(arenapath), ARENA_EXT => "")
-    inferencefile = joinpath(inferencedir, simname * INFERENCE_EXT)
-
+    inferencefile = joinpath(inferencedir, replace(basename(arenapath), ARENA_EXT => INFERENCE_EXT))
     mkpath(inferencedir)
 
     inferences = Any[]
