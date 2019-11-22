@@ -101,7 +101,7 @@ function score(method::SigMIMethod, series::AbstractMatrix{Int})
     scores = zeros(Float64, N, N)
     @views for i in 1:N, j in i+1:N
         score, p, _ = significance(mutualinfo, series[:, i], series[:, j]; nperms=nperms(method))
-        scores[i, j] = scores[j, i] = (p < pvalue(method)) ? zero(score) : score
+        scores[i, j] = scores[j, i] = (p < pvalue(method)) ? score : zero(score)
     end
     scores
 end
@@ -112,7 +112,7 @@ function score(method::SigMIMethod, series::AbstractArray{Int, 3})
     @views for i in 1:N, j in i+1:N
         score, p, _ = significance(mutualinfo, series[:, :, i], series[:, :, j];
                                    nperms=nperms(method))
-        scores[i, j] = scores[j, i] = (p < pvalue(method)) ? zero(score) : score
+        scores[i, j] = scores[j, i] = (p < pvalue(method)) ? score : zero(score)
     end
     scores
 end
