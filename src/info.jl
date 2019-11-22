@@ -75,7 +75,7 @@ permute(xs::AbstractVector) = @view xs[randperm(length(xs))]
 
 function permute(xs::AbstractMatrix)
     r = xs[:,:]
-    @views for i in size(r, 1)
+    @views for i in 1:size(r, 1)
         shuffle!(r[i, :])
     end
     r
