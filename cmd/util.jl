@@ -6,6 +6,8 @@ isseries(path) = endswith(path, SERIES_EXT)
 
 isinference(path) = endswith(path, INFERENCE_EXT)
 
+isroc(path) = endswith(path, ROC_EXT)
+
 function mktempgz(parent=tempdir())
     filename, io = mktemp(parent)
     close(io)
@@ -50,3 +52,19 @@ function readsim(arenapath)
     arena, series
 end
 
+function readinferences(inferencepath)
+    inferences = try
+        io = GZip.open(inferencepath, "r")
+        inferences = JSON.parse(io)
+        close(io)
+
+        inferences
+    catch
+        @error "An error occurred while reading \"$inferencepath\""
+        rethrow
+    end
+    foreach(inferences) do inference
+        inference["edges"] = map(e -> restore(EdgeEvidence, e), inference["edges"])
+    end
+    inferences
+end
