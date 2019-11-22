@@ -21,6 +21,16 @@ else
     zero(p)*zero(q)
 end
 
+function getdatadir(outdir)
+    version = 1
+    datadir = joinpath(outdir, Dates.format(now(), "Y-m-d"))
+
+    while ispath(datadir * "v$version")
+        version += 1
+    end
+    datadir * "v$version"
+end
+
 function gomen(; datadir=getdatadir("data"), forcesim=false, forceinf=false)
     N = 1
     nodes = [10]
