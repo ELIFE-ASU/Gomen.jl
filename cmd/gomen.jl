@@ -21,7 +21,7 @@ else
     zero(p)*zero(q)
 end
 
-function gomen(; datadir=getdatadir("data"), forcesim=false, forceinf=false, forceanal=false)
+function gomen(; datadir=getdatadir("data"), forcesim=false, forceinf=false)
     N = 1
     nodes = [10]
     ks = [1]
@@ -62,7 +62,4 @@ function gomen(; datadir=getdatadir("data"), forcesim=false, forceinf=false, for
 
     @info "Inferring networks..."
     @time infernetworks(methods, rescorers, datadir; force=forceinf)
-
-    @info "Analyzing networks..."
-    @time analyze(datadir; force=forceanal)
 end
