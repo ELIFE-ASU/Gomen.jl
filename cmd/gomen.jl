@@ -31,40 +31,8 @@ function getdatadir(outdir)
     datadir * "v$version"
 end
 
-function gomen(; datadir=getdatadir("data"), forcesim=false, forceinf=false)
-    N = 1
-    nodes = [10]
-    ks = [1]
-    ps = [0.5]
-
-    rounds = 10
-    replicates = 10
-
-    nperm = 100
-
-    graphs = Dict(
-        "cycle" => (cycle_graph(n) for n in nodes),
-        "wheel" => (wheel_graph(n) for n in nodes),
-        "star" => (star_graph(n) for n in nodes),
-        "barabasi-albert" => (BarabasiAlbertGenerator(N, n, k) for n in nodes for k in ks),
-        "erdos-renyi" => (ErdosRenyiGenerator(N, n, p) for n in nodes for p in ps),
-    )
-    schemes = CounterFactual.([Sigmoid(), Sigmoid(0.1), Sigmoid(10.), Heaviside()])
-    games = Games(0.5, 0.5)
-
-    methods = Dict(
-        "mutual info" => MIMethod(),
-        "lagged mutual info" => LaggedMIMethod(),
-        "significant mutual info" => SigMIMethod(nperm),
-        "significant lagged mutual info" => SigLaggedMIMethod(nperm)
-    )
-
-    rescorers = Dict(
-        "clr rescorer" => CLRRescorer(),
-        "Γ rescorer" => GammaRescorer(),
-        "harmonic Γ rescorer" => GammaRescorer(harmonicmean)
-    )
-
+function gomen(games, graphs, schemes, rounds, replicates, methods, rescorers;
+               datadir=getdatadir("data"), forcesim=false, forceinf=false)
     @info "Saving data in \"$datadir\""
 
     @info "Running simulations..."
