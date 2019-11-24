@@ -10,6 +10,11 @@ add_arg_group(s, "Input and Output")
         help = "output directory"
         arg_type = String
         default = getdatadir("data")
+    "--config"
+        help = """use parameters from a configuration file;
+        all simulation and inference parameters provided on the command line will be ignored.
+        """
+        arg_type = String
 end
 
 add_arg_group(s, "Game Parameters")

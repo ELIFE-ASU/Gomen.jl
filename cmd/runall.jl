@@ -4,7 +4,12 @@ include("config.jl")
 include("args.jl")
 
 args = parse_args(s)
-config = Config(args)
+config = if args["config"] != nothing
+    @info "Using simulation and inference parameters from configuration \"$(args["config"])\""
+    parseconfig(args["config"])
+else
+    Config(args)
+end
 
 mkpath(args["datadir"])
 
