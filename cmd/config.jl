@@ -36,4 +36,18 @@ Base.print(config::Config) = io -> print(io, config)
 configfile(datadir) = joinpath(datadir, "config.json")
 tmpconfigfile(datadir) = configfile(datadir) * ".tmp"
 
-JSON.parsefile(::Type{Config}, filename) = Config(JSON.parsefile(filename))
+parseconfig(filename) = Config(JSON.parsefile(filename))
+
+function forcesimulation(c::Config, d::Config)
+    c.gds != d.gds ||
+    c.gdt != d.gdt ||
+    c.nodes != d.nodes ||
+    c.nrand != d.nrand ||
+    c.ps != d.ps ||
+    c.ks != d.ks ||
+    c.betas != d.betas ||
+    c.replicates != d.replicates ||
+    c.rounds != d.rounds
+end
+
+forceinference(c::Config, d::Config) = c.permutations != d.permutations || forcesimulation(c, d)

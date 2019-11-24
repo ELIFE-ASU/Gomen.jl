@@ -7,6 +7,20 @@ args = parse_args(s)
 config = Config(args)
 
 mkpath(args["datadir"])
+
+if isfile(configfile(args["datadir"]))
+    oldconfig = parseconfig(configfile(args["datadir"]))
+    if config != oldconfig
+        if forcesimulation(config, oldconfig) && !args["force-simulation"]
+            @warn "Simulation parameters have changed; forcing simulation and inference phases..."
+            args["force-simulation"] = true
+            args["force-inference"] = true
+        elseif forceinference(config, oldconfig) && !args["force-inference"]
+            @warn "Inference parameters have changed; forcing inference phase..."
+            args["force-inference"] = true
+        end
+    end
+end
 open(print(config), tmpconfigfile(args["datadir"]), "w")
 
 if args["procs"] > 0
@@ -25,7 +39,7 @@ const graphs = Dict(
     "star" => (star_graph(n) for n in config.nodes),
     "barabasi-albert" => (BarabasiAlbertGenerator(config.nrand, n, k)
                           for n in config.nodes
-                          for k in cnfig.ks),
+                          for k in config.ks),
     "erdos-renyi" => (ErdosRenyiGenerator(config.nrand, n, p)
                       for n in config.nodes
                       for p in config.ps),
@@ -48,7 +62,7 @@ const rescorers = Dict(
     "harmonic Γ rescorer" => GammaRescorer(harmonicmean)
 )
 
-mv(tmpconfigfile(args["datadir"]), configfile(args["datadir"]); force=true)
-
 gomen(games, graphs, schemes, config.rounds, config.replicates, methods, rescorers, args["datadir"];
       forcesim = args["force-simulation"], forceinf = args["force-inference"])
+
+mv(tmpconfigfile(args["datadir"]), configfile(args["datadir"]); force=true)
