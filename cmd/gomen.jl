@@ -10,10 +10,10 @@ using Distributed
     Pkg.activate(".")
 end
 
-@everywhere include("util.jl")
-@everywhere include("simulations.jl")
-@everywhere include("inference.jl")
-@everywhere include("analysis.jl")
+@everywhere include("phases/util.jl")
+@everywhere include("phases/simulations.jl")
+@everywhere include("phases/inference.jl")
+@everywhere include("phases/analysis.jl")
 
 @everywhere harmonicmean(p::Float64, q::Float64) = if p != zero(p) && q != zero(q)
     2*p*q / (p + q)
