@@ -1,12 +1,22 @@
+function getdatadir(outdir)
+    version = 1
+    datadir = joinpath(outdir, Dates.format(now(), "Y-m-d"))
+
+    while ispath(datadir * "v$version")
+        version += 1
+    end
+    datadir * "v$version"
+end
+
 include("gomen.jl")
 
 const N = 1
 const nodes = [10]
 const ks = [1]
 const ps = [0.5]
-const nperm = 1000
-const rounds = 100
-const replicates = 100
+const nperm = 100
+const rounds = 10
+const replicates = 10
 
 const games = Games(0.5, 0.5)
 const graphs = Dict(
@@ -31,4 +41,6 @@ const rescorers = Dict(
     "harmonic Γ rescorer" => GammaRescorer(harmonicmean)
 )
 
-gomen(games, graphs, schemes, rounds, replicates, methods, rescorers)
+const datadir = getdatadir("data")
+
+gomen(games, graphs, schemes, rounds, replicates, methods, rescorers, datadir)

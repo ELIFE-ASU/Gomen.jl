@@ -21,18 +21,8 @@ else
     zero(p)*zero(q)
 end
 
-function getdatadir(outdir)
-    version = 1
-    datadir = joinpath(outdir, Dates.format(now(), "Y-m-d"))
-
-    while ispath(datadir * "v$version")
-        version += 1
-    end
-    datadir * "v$version"
-end
-
-function gomen(games, graphs, schemes, rounds, replicates, methods, rescorers;
-               datadir=getdatadir("data"), forcesim=false, forceinf=false)
+function gomen(games, graphs, schemes, rounds, replicates, methods, rescorers, datadir;
+               forcesim=false, forceinf=false)
     @info "Saving data in \"$datadir\""
 
     @info "Running simulations..."
