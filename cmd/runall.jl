@@ -1,4 +1,4 @@
-using ArgParse, Dates, Distributed
+using ArgParse, Dates, Distributed, JSON
 
 getdatadir(outdir) = joinpath(outdir, Dates.format(now(), "Y-m-d"))
 
@@ -142,5 +142,24 @@ const rescorers = Dict(
     "harmonic Γ rescorer" => GammaRescorer(harmonicmean)
 )
 
-gomen(games, graphs, schemes, rounds, replicates, methods, rescorers, args["datadir"];
+const datadir = args["datadir"]
+
+mkpath(datadir)
+open(joinpath(datadir, "config.json"), "w") do io
+    config = Dict(
+        "gds" => args["gds"],
+        "gdt" => args["gdt"],
+        "nodes" => args["nodes"],
+        "nrand" => args["nrand"],
+        "ps" => args["ps"],
+        "ks" => args["ks"],
+        "betas" => args["betas"],
+        "replicates" => args["replicates"],
+        "rounds" => args["rounds"],
+        "permutations" => args["permutations"]
+    )
+    JSON.print(io, config, 2)
+end
+
+gomen(games, graphs, schemes, rounds, replicates, methods, rescorers, datadir;
       forcesim = args["force-simulation"], forceinf = args["force-inference"])
