@@ -1,4 +1,4 @@
-using Distributed, Dates
+using Distributed
 
 @everywhere const ARENA_EXT = ".arena.gz"
 @everywhere const SERIES_EXT = ".series.gz"

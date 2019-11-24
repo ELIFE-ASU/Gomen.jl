@@ -12,6 +12,12 @@ git-tree-sha1 = "71f762fffd5f2432298505dc24327067551b3f31"
 uuid = "1c724243-ef5b-51ab-93f4-b0a88ac62a95"
 version = "0.6.2"
 
+[[ArgParse]]
+deps = ["Compat", "Test", "TextWrap"]
+git-tree-sha1 = "14d5789a99e6bea3e258d668ec09359a9feaf2d1"
+uuid = "c7e460c6-2fb9-53a9-8c5b-16f535851c63"
+version = "0.6.2"
+
 [[ArnoldiMethod]]
 deps = ["DelimitedFiles", "LinearAlgebra", "Random", "SparseArrays", "StaticArrays", "Test"]
 git-tree-sha1 = "2b6845cea546604fb4dca4e31414a6a59d39ddcd"
@@ -179,10 +185,10 @@ deps = ["Base64"]
 uuid = "d6f4376e-aef5-505a-96c1-9c027394607a"
 
 [[MbedTLS]]
-deps = ["BinaryProvider", "Dates", "Distributed", "Libdl", "Random", "Sockets", "Test"]
-git-tree-sha1 = "2d94286a9c2f52c63a16146bb86fd6cdfbf677c6"
+deps = ["BinaryProvider", "Dates", "Libdl", "Random", "Sockets"]
+git-tree-sha1 = "85f5947b53c8cfd53ccfa3f4abae31faa22c2181"
 uuid = "739be429-bea8-5141-9913-cc70e7f3736d"
-version = "0.6.8"
+version = "0.7.0"
 
 [[Missings]]
 deps = ["DataAPI"]
@@ -325,7 +331,7 @@ uuid = "4c63d2b9-4356-54db-8cca-17b64c39e42c"
 version = "0.9.0"
 
 [[SuiteSparse]]
-deps = ["Libdl", "LinearAlgebra", "SparseArrays"]
+deps = ["Libdl", "LinearAlgebra", "Serialization", "SparseArrays"]
 uuid = "4607b0f0-06f3-5cda-b6b1-a6196a1729e9"
 
 [[SymDict]]
@@ -337,6 +343,12 @@ version = "0.3.0"
 [[Test]]
 deps = ["Distributed", "InteractiveUtils", "Logging", "Random"]
 uuid = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[[TextWrap]]
+deps = ["Compat", "Test"]
+git-tree-sha1 = "8355cc559e85469cd4dbe927c375f61d3750e002"
+uuid = "b718987f-49a8-5099-9789-dcd902bef87d"
+version = "0.3.0"
 
 [[URIParser]]
 deps = ["Test", "Unicode"]
