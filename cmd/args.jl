@@ -14,12 +14,12 @@ end
 
 add_arg_group(s, "Game Parameters")
 @add_arg_table s begin
-    "--gds"
+    "--ds"
         help = "S-parameter step size for Games generator; must be greater than 0.0"
         arg_type = Float64
         default = 0.5
         range_tester = ds -> ds > 0.0
-    "--gdt"
+    "--dt"
         help = "T-parameter step size for Games generator; must be greater than 0.0"
         arg_type = Float64
         default = 0.5

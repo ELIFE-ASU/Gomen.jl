@@ -1,6 +1,6 @@
 struct Config
-    gds::Float64
-    gdt::Float64
+    ds::Float64
+    dt::Float64
     nodes::Vector{Int}
     nrand::Int
     ps::Vector{Float64}
@@ -21,7 +21,7 @@ struct Config
             throw(ArgumentError("Sigmoid rule parameter array may not be empty"))
         end
 
-        new(args["gds"], args["gdt"],
+        new(args["ds"], args["dt"],
             args["nodes"], args["nrand"], args["ps"], args["ks"],
             args["betas"],
             args["replicates"], args["rounds"],
@@ -39,8 +39,8 @@ tmpconfigfile(datadir) = configfile(datadir) * ".tmp"
 parseconfig(filename) = Config(JSON.parsefile(filename))
 
 function forcesimulation(c::Config, d::Config)
-    c.gds != d.gds ||
-    c.gdt != d.gdt ||
+    c.ds != d.ds ||
+    c.dt != d.dt ||
     c.nodes != d.nodes ||
     c.nrand != d.nrand ||
     c.ps != d.ps ||

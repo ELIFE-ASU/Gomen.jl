@@ -32,7 +32,7 @@ end
 
 include("gomen.jl")
 
-const games = Games(config.gds, config.gdt)
+const games = Games(config.ds, config.dt)
 const graphs = Dict(
     "cycle" => (cycle_graph(n) for n in config.nodes),
     "wheel" => (wheel_graph(n) for n in config.nodes),
