@@ -1,39 +1,8 @@
 using Distributed, JSON
 
+include("config.jl")
+
 args = include("args.jl")
-
-struct Config
-    gds::Float64
-    gdt::Float64
-    nodes::Vector{Int}
-    nrand::Int
-    ps::Vector{Float64}
-    ks::Vector{Int}
-    betas::Vector{Float64}
-    replicates::Int
-    rounds::Int
-    permutations::Int
-
-    function Config(args::Dict{String, Any})
-        if isempty(args["nodes"])
-            throw(ArgumentError("nodes array may not be empty"))
-        elseif isempty(args["ps"])
-            throw(ArgumentError("Erdős-Rényi bias array may not be empty"))
-        elseif isempty(args["ks"])
-            throw(ArgumentError("Barabási–Albert parameter array may not be empty"))
-        elseif isempty(args["betas"])
-            throw(ArgumentError("Sigmoid rule parameter array may not be empty"))
-        end
-
-        new(args["gds"], args["gdt"],
-            args["nodes"], args["nrand"], args["ps"], args["ks"],
-            args["betas"],
-            args["replicates"], args["rounds"],
-            args["permutations"]
-           )
-    end
-end
-
 config = Config(args)
 
 if args["procs"] > 0
@@ -82,9 +51,7 @@ const rescorers = Dict(
 const datadir = args["datadir"]
 
 mkpath(datadir)
-open(joinpath(datadir, "config.json"), "w") do io
-    JSON.print(io, config, 2)
-end
+open(print(config), configfile(datadir), "w")
 
 gomen(games, graphs, schemes, rounds, replicates, methods, rescorers, datadir;
       forcesim = args["force-simulation"], forceinf = args["force-inference"])
