@@ -1,5 +1,37 @@
 using ArgParse, Dates, Distributed, JSON
 
+struct Config
+    gds::Float64
+    gdt::Float64
+    nodes::Vector{Int}
+    nrand::Int
+    ps::Vector{Float64}
+    ks::Vector{Int}
+    betas::Vector{Float64}
+    replicates::Int
+    rounds::Int
+    permutations::Int
+
+    function Config(args::Dict{String, Any})
+        if isempty(args["nodes"])
+            throw(ArgumentError("nodes array may not be empty"))
+        elseif isempty(args["ps"])
+            throw(ArgumentError("Erdős-Rényi bias array may not be empty"))
+        elseif isempty(args["ks"])
+            throw(ArgumentError("Barabási–Albert parameter array may not be empty"))
+        elseif isempty(args["betas"])
+            throw(ArgumentError("Sigmoid rule parameter array may not be empty"))
+        end
+
+        new(args["gds"], args["gdt"],
+            args["nodes"], args["nrand"], args["ps"], args["ks"],
+            args["betas"],
+            args["replicates"], args["rounds"],
+            args["permutations"]
+           )
+    end
+end
+
 getdatadir(outdir) = joinpath(outdir, Dates.format(now(), "Y-m-d"))
 
 const s = ArgParseSettings(version = "1.0", add_version = true)
@@ -98,6 +130,7 @@ add_arg_group(s, "Worker Process Control")
 end
 
 args = parse_args(s)
+config = Config(args)
 
 if args["procs"] > 0
     if args["slurm"]
@@ -146,18 +179,6 @@ const datadir = args["datadir"]
 
 mkpath(datadir)
 open(joinpath(datadir, "config.json"), "w") do io
-    config = Dict(
-        "gds" => args["gds"],
-        "gdt" => args["gdt"],
-        "nodes" => args["nodes"],
-        "nrand" => args["nrand"],
-        "ps" => args["ps"],
-        "ks" => args["ks"],
-        "betas" => args["betas"],
-        "replicates" => args["replicates"],
-        "rounds" => args["rounds"],
-        "permutations" => args["permutations"]
-    )
     JSON.print(io, config, 2)
 end
 
