@@ -1,9 +1,13 @@
 using Distributed, JSON
 
 include("config.jl")
+include("args.jl")
 
-args = include("args.jl")
+args = parse_args(s)
 config = Config(args)
+
+mkpath(args["datadir"])
+open(print(config), tmpconfigfile(args["datadir"]), "w")
 
 if args["procs"] > 0
     if args["slurm"]
@@ -14,32 +18,28 @@ end
 
 include("gomen.jl")
 
-const N = args["nrand"]
-const nodes = args["nodes"]
-const ks = args["ks"]
-const ps = args["ps"]
-const nperm = args["permutations"]
-const rounds = args["rounds"]
-const replicates = args["replicates"]
-
-const games = Games(args["gds"], args["gdt"])
+const games = Games(config.gds, config.gdt)
 const graphs = Dict(
-    "cycle" => (cycle_graph(n) for n in nodes),
-    "wheel" => (wheel_graph(n) for n in nodes),
-    "star" => (star_graph(n) for n in nodes),
-    "barabasi-albert" => (BarabasiAlbertGenerator(N, n, k) for n in nodes for k in ks),
-    "erdos-renyi" => (ErdosRenyiGenerator(N, n, p) for n in nodes for p in ps),
+    "cycle" => (cycle_graph(n) for n in config.nodes),
+    "wheel" => (wheel_graph(n) for n in config.nodes),
+    "star" => (star_graph(n) for n in config.nodes),
+    "barabasi-albert" => (BarabasiAlbertGenerator(config.nrand, n, k)
+                          for n in config.nodes
+                          for k in cnfig.ks),
+    "erdos-renyi" => (ErdosRenyiGenerator(config.nrand, n, p)
+                      for n in config.nodes
+                      for p in config.ps),
 )
 
-const rules = push!(AbstractRule[Sigmoid(β) for β in args["betas"]], Heaviside())
+const rules = push!(AbstractRule[Sigmoid(β) for β in config.betas], Heaviside())
 
 const schemes = CounterFactual.(rules)
 
 const methods = Dict(
     "mutual info" => MIMethod(),
     "lagged mutual info" => LaggedMIMethod(),
-    "significant mutual info" => SigMIMethod(nperm),
-    "significant lagged mutual info" => SigLaggedMIMethod(nperm)
+    "significant mutual info" => SigMIMethod(config.permutations),
+    "significant lagged mutual info" => SigLaggedMIMethod(config.permutations)
 )
 
 const rescorers = Dict(
@@ -48,10 +48,7 @@ const rescorers = Dict(
     "harmonic Γ rescorer" => GammaRescorer(harmonicmean)
 )
 
-const datadir = args["datadir"]
+mv(tmpconfigfile(args["datadir"]), configfile(args["datadir"]); force=true)
 
-mkpath(datadir)
-open(print(config), configfile(datadir), "w")
-
-gomen(games, graphs, schemes, rounds, replicates, methods, rescorers, datadir;
+gomen(games, graphs, schemes, config.rounds, config.replicates, methods, rescorers, args["datadir"];
       forcesim = args["force-simulation"], forceinf = args["force-inference"])

@@ -34,3 +34,6 @@ Base.print(io::IO, config::Config) = JSON.print(io, config, 2)
 Base.print(config::Config) = io -> print(io, config)
 
 configfile(datadir) = joinpath(datadir, "config.json")
+tmpconfigfile(datadir) = configfile(datadir) * ".tmp"
+
+JSON.parsefile(::Type{Config}, filename) = Config(JSON.parsefile(filename))

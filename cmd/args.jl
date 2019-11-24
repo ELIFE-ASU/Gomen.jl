@@ -96,5 +96,3 @@ add_arg_group(s, "Worker Process Control")
         help = "use the SLURM cluster manager"
         action = :store_true
 end
-
-parse_args(s)
