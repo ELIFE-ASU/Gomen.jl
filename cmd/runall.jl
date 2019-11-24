@@ -1,4 +1,4 @@
-using Distributed, JSON
+using Distributed, JSON, ClusterManagers
 
 include("config.jl")
 include("args.jl")
@@ -30,9 +30,10 @@ open(print(config), tmpconfigfile(args["datadir"]), "w")
 
 if args["procs"] > 0
     if args["slurm"]
-        error("SLURM is not yet supported")
+        addprocs(SlurmManager(args["procs"]))
+    else
+        addprocs(args["procs"])
     end
-    addprocs(args["procs"])
 end
 
 include("gomen.jl")
