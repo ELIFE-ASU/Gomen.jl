@@ -1,14 +1,6 @@
 using ArgParse, Dates, Distributed
 
-function getdatadir(outdir)
-    version = 1
-    datadir = joinpath(outdir, Dates.format(now(), "Y-m-d"))
-
-    while ispath(datadir * "v$version")
-        version += 1
-    end
-    datadir * "v$version"
-end
+getdatadir(outdir) = joinpath(outdir, Dates.format(now(), "Y-m-d"))
 
 const s = ArgParseSettings(version = "1.0", add_version = true)
 
