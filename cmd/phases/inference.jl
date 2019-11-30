@@ -37,9 +37,9 @@ function infernetworks(methods, rescorers, datadir; force=false)
         tmpdir = joinpath(datadir, "tmp")
         mkpath(tmpdir)
 
+        futures = Future[]
         for (root, _, files) in walkdir(simsdir)
             infdir = joinpath(datadir, relpath(root, simsdir))
-            futures = Future[]
             for file in files
                 if isarena(file)
                     arenapath = joinpath(root, file)
@@ -48,8 +48,8 @@ function infernetworks(methods, rescorers, datadir; force=false)
                                                         series, tmpdir, infdir))
                 end
             end
-            foreach(wait, futures)
         end
+        foreach(wait, futures)
         rm(tmpdir; recursive=true)
     else
         @warn "The inference directory \"$datadir\" already exists; skipping inference..."
