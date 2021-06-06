@@ -1,5 +1,7 @@
 abstract type GraphGenerator end
 
+Base.length(g::GraphGenerator) = g.l
+
 struct BarabasiAlbertGenerator <: GraphGenerator
     l::Int
     n::Int
