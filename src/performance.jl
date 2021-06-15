@@ -1,3 +1,5 @@
+using Printf
+
 struct ROC
     fpr::Vector{Float64}
     tpr::Vector{Float64}
@@ -118,25 +120,35 @@ end
 auc(r::ROC) = @views dot(r.tpr[2:end] + r.tpr[1:end-1], r.fpr[2:end] - r.fpr[1:end-1]) / 2.0
 
 @recipe function plotroc(r::ROC)
-   legend := false
-   grid := false
-   xlim := (0, 1)
-   ylim := (0, 1)
+    a = auc(r)
+    if !get(plotattributes, :noauc, false)
+        label := if haskey(plotattributes, :label) && plotattributes[:label] != ""
+            @sprintf "%s (AUC = %0.3f)" plotattributes[:label] a
+        elseif !haskey(plotattributes, :label)
+            @sprintf "AUC = %0.3f" a
+        end
+    end
 
-   size --> (600, 600)
-   xlabel --> "FPR"
-   ylabel --> "TPR"
-   linewidth --> 2
+    xlims := (0, 1)
+    ylims := (0, 1)
 
-   @series begin
-       seriestype := :path
-       line := :dash
-       linewidth := 2
-       color := :dimgray
-       [0,1], [0,1]
-   end
+    grid -> false
+    legend --> ifelse(a ≥ 0.5, :bottomright, :topleft)
+    size --> (600, 600)
+    xguide --> "FPR"
+    yguide --> "TPR"
+    linewidth --> 2
 
-   @series begin
-       r.fpr, r.tpr
-   end
+    @series begin
+        r.fpr, r.tpr
+    end
+
+    @series begin
+        seriestype := :path
+        line := :dash
+        linewidth := 2
+        seriescolor := :dimgray
+        label := nothing
+        [0,1], [0,1]
+    end
 end
