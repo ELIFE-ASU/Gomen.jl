@@ -319,7 +319,7 @@ end
 
 Starting from `replicates` many random initial strategies, play the game in the arena `rounds` many
 times. The result is a 3-D array of the agents strategies with the first two dimensions of size
-`replicates` and `rounds`, respectively.
+`rounds` and `replicates`, respectively.
 """
 function play(a::AbstractArena; rounds::Int = 1, replicates::Int = 1)
     if rounds < 1
@@ -329,11 +329,11 @@ function play(a::AbstractArena; rounds::Int = 1, replicates::Int = 1)
         throw(DomainError(replicates, "must be at least 1"))
     end
 
-    series = Array{Int}(undef, replicates, rounds, length(a))
-    for i in 1:replicates
-        series[i,1,:] = rand(1:2, length(a))
+    series = Array{Int}(undef, rounds, replicates, length(a))
+    @views for i in 1:replicates
+        series[1,i,:] = rand(1:2, length(a))
         for j in 2:rounds
-            series[i,j,:] = play(a, @view series[i,j-1,:])
+            series[j,i,:] = play(a, series[j-1,i,:])
         end
     end
     series
