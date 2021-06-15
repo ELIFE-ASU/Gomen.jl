@@ -168,8 +168,12 @@ SignificanceScorer(scorer::Scorer, args...) = SignificanceScorer(AnalyticSig, sc
 scorer(m::SignificanceScorer) = (args...; kwargs...) -> m.scorer(args...; kwargs...)
 
 function (m::SignificanceScorer{S})(args...; kwargs...) where S
-    dist = @sig S scorer(m)(args...; kwargs...) nperm=m.nperms parg=2
-    dist.p < m.α ? dist.gt : zero(dist.gt)
+    try
+        dist = @sig S scorer(m)(args...; kwargs...) nperm=m.nperms parg=2
+        dist.p < m.α ? dist.gt : zero(dist.gt)
+    catch
+        zero(Float64)
+    end
 end
 
 """
