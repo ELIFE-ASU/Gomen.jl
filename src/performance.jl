@@ -61,8 +61,6 @@ end
 
 Base.length(r::ROC) = length(fpr(r))
 
-JSON.lower(r::ROC) = Dict("fpr" => fpr(r), "tpr" => tpr(r))
-
 struct Curve
     xs::Vector{Float64}
     ys::Vector{Float64}

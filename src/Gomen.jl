@@ -10,12 +10,10 @@ export Scores, Rescorer, GammaRescorer, CLRRescorer
 export EdgeEvidence, Scorer, infer
 export SymmetricScorer, MIScorer, LaggedMIScorer, SymLaggedMIScorer, TEScorer, SymTEScorer, SignificanceScorer
 export ROC, roc, tpr, fpr, auc
-export restore
 
 using Base.Iterators, Base.Meta, LinearAlgebra, Random, Statistics
 using Distributions
 using Imogen
-using JSON
 using LightGraphs, LightGraphs.SimpleGraphs
 using MLBase
 using RecipesBase

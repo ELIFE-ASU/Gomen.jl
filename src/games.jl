@@ -39,10 +39,6 @@ play(g::Game, a::Int, b::Int) = g.payoffs[a, b]
 
 Base.show(io::IO, g::Game) = print(io, "Game($(sparam(g)), $(tparam(g)))")
 
-JSON.lower(g::Game) = string(g)
-
-restore(::Type{Game}, j::AbstractString) = eval(Meta.parse(j))
-
 const GamesIterator = let ParameterRange = typeof(-0.5:0.1:0.5)
     Iterators.ProductIterator{Tuple{ParameterRange, ParameterRange}}
 end
@@ -86,10 +82,6 @@ Base.length(g::Games) = length(g.iterator)
 A supertype for all decision rules.
 """
 abstract type AbstractRule end
-
-JSON.lower(r::AbstractRule) = string(r)
-
-restore(::Type{AbstractRule}, j::AbstractString) = eval(Meta.parse(j))
 
 """
     apply(r::AbstractRule, dp)
@@ -163,10 +155,6 @@ end
 A supertype for all schemes, mechanisms for agents to choose their next strategy.
 """
 abstract type AbstractScheme end
-
-JSON.lower(s::AbstractScheme) = string(s)
-
-restore(::Type{AbstractScheme}, j::AbstractString) = eval(Meta.parse(j))
 
 """
     decide(scheme, ss::AbstractVector{Int}, ps::AbstractArray{Float64,2})
@@ -272,31 +260,6 @@ LightGraphs.edges(a::AbstractArena) = edges(graph(a))
 A vector of the agent's neighbors
 """
 LightGraphs.neighbors(a::AbstractArena, i) = neighbors(graph(a), i)
-
-function JSON.lower(g::Graph) where {Graph <: SimpleGraph}
-    Dict{String,Any}("type" => string(typeof(g)),
-                     "edges" => map(e -> (e.src, e.dst), edges(g)))
-end
-
-function restore(::Type{Graph}, d::Dict{String,Any}) where {Graph <: SimpleGraph}
-    G = eval(first(Meta.parse(d["type"]).args))
-    G(map(e -> Edge(e[1], e[2]), d["edges"]))
-end
-
-function JSON.lower(a::AbstractArena)
-    Dict{String, Any}("type" => string(typeof(a)),
-                      "game" => JSON.lower(game(a)),
-                      "graph" => JSON.lower(graph(a)),
-                      "scheme" => JSON.lower(scheme(a)))
-end
-
-function restore(::Type{AbstractArena}, d::Dict{String,Any})
-    A = eval(first(Meta.parse(d["type"]).args))
-    game = restore(Game, d["game"])
-    graph = restore(SimpleGraph, d["graph"])
-    scheme = restore(AbstractScheme, d["scheme"])
-    A(game, graph, scheme)
-end
 
 """
     play(arena, strategies)
