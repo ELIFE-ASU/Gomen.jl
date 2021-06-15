@@ -255,37 +255,44 @@ function rescore(gr::GammaRescorer, scores::Scores)
 end
 
 """
-    edgelist(scores)
+    edgelist(scores[; symmetric=false, self=false])
 
 Construct a weighted edge list from a scores matrix.
 """
-function edgelist(scores::Scores)
+function evidence(scores::Scores; symmetric=false, self=false)
     N = size(scores, 1)
-    [EdgeEvidence(i, j, scores[i, j]) for i in 1:N for j in i+1:N]
+
+    evidence = if symmetric
+        [EdgeEvidence(i, j, scores[i, j]) for i in 1:N for j in i+1:N]
+    else
+        [EdgeEvidence(i, j, scores[i, j]) for i in 1:N for j in 1:N]
+    end
+
+    !self && filter(e -> e.src != e.dst, evidence)
+
+    evidence
 end
 
-function infer(scorer::Scorer, series::Union{AbstractMatrix{Int}, AbstractArray{Int, 3}})
-    edgelist(score(scorer, series))
+function infer(scorer::Scorer, series; kwargs...)
+    evidence(score(scorer, series); kwargs...)
 end
 
-function infer(scorer::Scorer, series::Union{AbstractMatrix{Int}, AbstractArray{Int, 3}},
-               rescorer::Rescorer)
-    edgelist(rescore(rescorer, score(scorer, series)))
+function infer(scorer::SymmetricScorer, series; kwargs...)
+    evidence(score(scorer, series); symmetric=true, kwargs...)
 end
 
-function infer(scorer::Scorer, arena::AbstractArena, rounds::Int)
-    infer(scorer, play(arena, rounds))
+function infer(scorer::SignificanceScorer{AnalyticSig,<:SymmetricScorer}, series; kwargs...)
+    evidence(score(scorer, series); symmetric=true, kwargs...)
 end
 
-function infer(scorer::Scorer, arena::AbstractArena, rounds::Int, replicates::Int)
-    infer(scorer, play(arena, rounds, replicates))
+function infer(scorer::Scorer, rescorer::Rescorer, series; kwargs...)
+    evidence(rescore(rescorer, score(scorer, series)); kwargs...)
 end
 
-function infer(scorer::Scorer, arena::AbstractArena, rounds::Int, rescorer::Rescorer)
-    infer(scorer, play(arena, rounds), rescorer)
+function infer(scorer::SymmetricScorer, rescorer::Rescorer, series; kwargs...)
+    evidence(rescore(rescorer, score(scorer, series)); symmetric=true, kwargs...)
 end
 
-function infer(scorer::Scorer, arena::AbstractArena, rounds::Int, replicates::Int,
-               rescorer::Rescorer)
-    infer(scorer, play(arena, rounds, replicates), rescorer)
+function infer(scorer::SignificanceScorer{AnalyticSig,<:SymmetricScorer}, rescorer::Rescorer, series; kwargs...)
+    evidence(rescore(rescorer, score(scorer, series)); symmetric=true, kwargs...)
 end
