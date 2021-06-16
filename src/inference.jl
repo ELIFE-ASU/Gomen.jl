@@ -96,7 +96,7 @@ function (::ChisqScorer)(xs::AbstractArray{Int}, ys::AbstractArray{Int}, args...
     bs = tuple(fill(2, size(xs, 1))...)
     us = vec(mapslices(x -> Imogen.index(x, bs), xs; dims=1))
     vs = vec(mapslices(y -> Imogen.index(y, bs), ys; dims=1))
-    ChisqTest(us, vs, max(maximum(us), maximum(vs))).stat
+    ChisqTest(us, vs, (minimum(us):maximum(us), minimum(vs):maximum(vs))).stat
 end
 
 """
