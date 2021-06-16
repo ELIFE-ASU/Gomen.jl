@@ -113,8 +113,12 @@ function MLBase.roc(arena::AbstractArena, edges::Vector{EdgeEvidence}, args...)
     g = graph(arena)
     gt = [Int(has_edge(g, e.src, e.dst)) for e in edges]
     scores = [e.evidence for e in edges]
-    r = roc(gt, scores, args...)
-    ROC(map(false_positive_rate, r), map(true_positive_rate, r))
+    if all(==(scores[1]), scores)
+        ROC([0.0, 1.0], [0.0, 1.0])
+    else
+        r = roc(gt, scores, args...)
+        ROC(map(false_positive_rate, r), map(true_positive_rate, r))
+    end
 end
 
 auc(r::ROC) = @views dot(r.tpr[2:end] + r.tpr[1:end-1], r.fpr[2:end] - r.fpr[1:end-1]) / 2.0
