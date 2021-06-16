@@ -6,6 +6,7 @@ export cycle_graph, wheel_graph, star_graph, lattice_graph, nv
 export AbstractRule, apply, Sigmoid, Heaviside
 export AbstractScheme, CounterFactual, decide
 export AbstractArena, game, graph, scheme, Arena, payoffs
+export Aggregator, Sum, HarmonicMean
 export Scores, Rescorer, GammaRescorer, CLRRescorer
 export EdgeEvidence, Scorer, infer
 export SymmetricScorer

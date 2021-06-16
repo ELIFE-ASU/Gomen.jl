@@ -279,6 +279,16 @@ function rescore(::CLRRescorer, scores::Scores)
     rescore
 end
 
+abstract type Aggregator end
+
+struct Sum <: Aggregator end
+
+(::Sum)(args::Number...) = sum(args)
+
+struct HarmonicMean <: Aggregator end
+
+(::HarmonicMean)(args::Number...) = 1.0 / mean(1.0 ./ args)
+
 """
     GammaRescorer(ϵ=eps(Float64), aggregator=(p,q) -> p + q)
 
@@ -287,13 +297,12 @@ the probability of the score given those distributions.
 
 The scores provided to the Gamma distribution cannot be 0, so all 0-scores are set to ϵ.
 """
-struct GammaRescorer <: Rescorer
+struct GammaRescorer{A<:Aggregator} <: Rescorer
+    aggregator::A
     ϵ::Float64
-    aggregator::Function
+    GammaRescorer(aggregator::T; ϵ::Float64=eps(Float64)) where T = new{T}(aggregator, ϵ)
 end
-GammaRescorer() = GammaRescorer(eps(Float64), (p, q) -> p + q)
-GammaRescorer(agg::Function) = GammaRescorer(eps(Float64), agg)
-GammaRescorer(ϵ::Float64) = GammaRescorer(ϵ, (p, q) -> p + q)
+GammaRescorer() = GammaRescorer(Sum())
 
 function rescore(gr::GammaRescorer, scores::Scores)
     try
