@@ -8,12 +8,16 @@ export AbstractScheme, CounterFactual, decide
 export AbstractArena, game, graph, scheme, Arena, payoffs
 export Scores, Rescorer, GammaRescorer, CLRRescorer
 export EdgeEvidence, Scorer, infer
-export SymmetricScorer, MIScorer, LaggedMIScorer, SymLaggedMIScorer, TEScorer, SymTEScorer, SignificanceScorer
+export SymmetricScorer
+export ChisqScorer, LaggedChisqScorer, SymLaggedChisqScorer
+export MIScorer, LaggedMIScorer, SymLaggedMIScorer
+export TEScorer, SymTEScorer
+export SignificanceScorer
 export ROC, roc, tpr, fpr, auc
 
 using Base.Iterators, Base.Meta, LinearAlgebra, Random, Statistics
 using Distributions
-using Imogen
+using HypothesisTests, Imogen
 using LightGraphs, LightGraphs.SimpleGraphs
 using MLBase
 using RecipesBase

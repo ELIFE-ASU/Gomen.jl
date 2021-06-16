@@ -82,6 +82,72 @@ function score(scorer::M, series::AbstractMatrix{Int}, args...; self=false, kwar
 end
 
 """
+    ChisqScorer
+
+Score based on the χ²-test statistic
+"""
+struct ChisqScorer <: SymmetricScorer end
+
+function (::ChisqScorer)(xs::AbstractArray{Int,1}, ys::AbstractArray{Int,1}, args...; kwargs...)
+    ChisqTest(xs, ys, 2).stat
+end
+
+function (::ChisqScorer)(xs::AbstractArray{Int}, ys::AbstractArray{Int}, args...; kwargs...)
+    bs = tuple(fill(2, size(xs, 1))...)
+    us = vec(mapslices(x -> Imogen.index(x, bs), xs; dims=1))
+    vs = vec(mapslices(y -> Imogen.index(y, bs), ys; dims=1))
+    ChisqTest(us, vs, max(maximum(us), maximum(vs))).stat
+end
+
+"""
+    LaggedChisqScorer
+"""
+struct LaggedChisqScorer <: Scorer
+    lag::Int
+end
+LaggedChisqScorer() = LaggedChisqScorer(1)
+
+function (m::LaggedChisqScorer)(xs::AbstractArray{Int,1}, ys::AbstractArray{Int,1}, args...; kwargs...)
+    scorer = ChisqScorer()
+    if m.lag < 0
+        @views scorer(xs[m.lag+1:end], ys[1:end-m.lag])
+    else
+        @views scorer(xs[1:end-m.lag], ys[m.lag+1:end])
+    end
+end
+
+function (m::LaggedChisqScorer)(xs::AbstractArray{Int,2}, ys::AbstractArray{Int,2}, args...; kwargs...)
+    scorer = ChisqScorer()
+    if m.lag < 0
+        @views scorer(xs[:,m.lag+1:end], ys[:,1:end-m.lag])
+    else
+        @views scorer(xs[:,1:end-m.lag], ys[:,m.lag+1:end])
+    end
+end
+
+function (m::LaggedChisqScorer)(xs::AbstractArray{Int,3}, ys::AbstractArray{Int,3}, args...; kwargs...)
+    scorer = ChisqScorer()
+    if m.lag < 0
+        @views scorer(xs[:,m.lag+1:end,:], ys[:,1:end-m.lag,:])
+    else
+        @views scorer(xs[:,1:end-m.lag,:], ys[:,m.lag+1:end,:])
+    end
+end
+
+"""
+    LaggedChisqScorer
+"""
+struct SymLaggedChisqScorer <: Scorer
+    lag::Int
+end
+SymLaggedChisqScorer() = SymLaggedChisqScorer(1)
+
+function (m::SymLaggedChisqScorer)(xs::AbstractArray{Int}, ys::AbstractArray{Int}, args...; kwargs...)
+    scorer = SymLaggedMIScorer(m.lag)
+    0.5 * (scorer(xs, ys) + scorer(ys, xs))
+end
+
+"""
     MIScorer
 
 Infer based on the mutual information between pairs of nodes.
