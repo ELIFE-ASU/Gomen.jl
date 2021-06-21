@@ -15,6 +15,7 @@ export MIScorer, LaggedMIScorer, SymLaggedMIScorer
 export TEScorer, SymTEScorer
 export SignificanceScorer
 export ROC, roc, tpr, fpr, auc
+export SimulationError, ScoringError, PerformanceError
 
 using Base.Iterators, Base.Meta, LinearAlgebra, Random, Statistics
 using Distributions
@@ -28,5 +29,33 @@ include("games.jl")
 include("graphs.jl")
 include("inference.jl")
 include("performance.jl")
+
+struct SimulationError
+    rng::AbstractRNG
+    arena::Arena
+    rounds::Int
+    replicates::Int
+    err
+end
+
+struct ScoringError
+    rng::AbstractRNG
+    arena::Arena
+    series::Array{Int,3}
+    scorer::Union{Nothing,Scorer}
+    significance::Bool
+    rescorer::Union{Nothing,Rescorer}
+    err
+end
+
+struct PerformanceError
+    arena::Arena
+    series::Array{Int,3}
+    scorer::Union{Nothing,Scorer}
+    significance::Bool
+    rescorer::Union{Nothing,Rescorer}
+    scores::Array{Int,2}
+    err
+end
 
 end
