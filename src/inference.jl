@@ -88,15 +88,8 @@ Score based on the χ²-test statistic
 """
 struct ChisqScorer <: SymmetricScorer end
 
-function (::ChisqScorer)(xs::AbstractArray{Int,1}, ys::AbstractArray{Int,1}, args...; kwargs...)
-    ChisqTest(xs, ys, 2).stat
-end
-
 function (::ChisqScorer)(xs::AbstractArray{Int}, ys::AbstractArray{Int}, args...; kwargs...)
-    bs = tuple(fill(2, size(xs, 1))...)
-    us = vec(mapslices(x -> Imogen.index(x, bs), xs; dims=1))
-    vs = vec(mapslices(y -> Imogen.index(y, bs), ys; dims=1))
-    ChisqTest(us, vs, (minimum(us):maximum(us), minimum(vs):maximum(vs))).stat
+    @views ChisqTest(xs[:], ys[:], (minimum(xs):maximum(xs), minimum(ys):maximum(ys))).stat
 end
 
 """
@@ -143,7 +136,7 @@ end
 SymLaggedChisqScorer() = SymLaggedChisqScorer(1)
 
 function (m::SymLaggedChisqScorer)(xs::AbstractArray{Int}, ys::AbstractArray{Int}, args...; kwargs...)
-    scorer = SymLaggedMIScorer(m.lag)
+    scorer = LaggedChisqScorer(m.lag)
     0.5 * (scorer(xs, ys) + scorer(ys, xs))
 end
 
