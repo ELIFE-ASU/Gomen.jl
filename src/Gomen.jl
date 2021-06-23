@@ -1,8 +1,9 @@
 module Gomen
 
-export Game, sparam, tparam, play, Games
-export SimpleGraph, GraphGenerator, BarabasiAlbertGenerator, ErdosRenyiGenerator, param
-export cycle_graph, wheel_graph, star_graph, lattice_graph, nv
+export Game, sparam, tparam, play, Games, quadrant, name
+export SimpleGraph, GraphGenerator, nv, params
+export CycleGraphGenerator, WheelGraphGenerator, StarGraphGenerator, GridGraphGenerator
+export BarabasiAlbertGenerator, ErdosRenyiGenerator
 export AbstractRule, apply, Sigmoid, Heaviside
 export AbstractScheme, CounterFactual, decide
 export AbstractArena, game, graph, scheme, Arena, payoffs
@@ -16,6 +17,7 @@ export TEScorer, SymTEScorer
 export SignificanceScorer
 export ROC, roc, tpr, fpr, auc
 export SimulationError, ScoringError, PerformanceError
+export gomen
 
 using Base.Iterators, Base.Meta, LinearAlgebra, Random, Statistics
 using Distributions
@@ -24,6 +26,7 @@ using LightGraphs, LightGraphs.SimpleGraphs
 using MLBase
 using RecipesBase
 using StaticArrays
+using DrWatson
 
 include("games.jl")
 include("graphs.jl")
@@ -56,6 +59,35 @@ struct PerformanceError
     rescorer::Union{Nothing,Rescorer}
     scores::Array{Int,2}
     err
+end
+
+function gomen(arena, scorer, significance, rescorer, rounds, replicates; kwargs...)
+    rng = deepcopy(Random.default_rng())
+    series = try
+        play(arena; rounds, replicates)
+    catch err
+        throw(SimulationError(rng, arena, rounds, replicates, err))
+    end
+
+    scorerrng = deepcopy(Random.default_rng())
+    scores = try
+        if isnothing(rescorer)
+            infer(significance ? SignificanceScorer(scorer) : scorer, series; kwargs...)
+        else
+            infer(significance ? SignificanceScorer(scorer) : scorer, rescorer, series; kwargs...)
+        end
+    catch err
+        throw(ScoringError(scorerrng, arena, series, scorer, significance, rescorer, err))
+    end
+
+    roc, auc = try
+        roc = Gomen.roc(arena, scores)
+        roc, Gomen.auc(roc)
+    catch err
+        throw(PerformanceError(arena, series, scorer, significance, rescorer, scores, err))
+    end
+
+    @dict game rng scorerrng series scorer significance rescorer roc auc
 end
 
 end
