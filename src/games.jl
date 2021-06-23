@@ -338,3 +338,28 @@ function play(a::AbstractArena; rounds::Int = 1, replicates::Int = 1)
     end
     series
 end
+
+function quadrant(g::Game)
+    S, T = sparam(g), tparam(g)
+    if one(T) ≤ T
+        zero(S) ≤ S ? 1 : 4
+    else
+        zero(S) ≤ S ? 2 : 3
+    end
+end
+
+name(g::Game) = name(quadrant(g))
+
+function name(quad::Int)
+    if quad === 1
+        "Hawk-Dove"
+    elseif quad === 2
+        "Harmony"
+    elseif quad === 3
+        "Stag Hunt"
+    elseif quad === 4
+        "Prisoner's Dilemma"
+    else
+        error("invalid quadrant: $q")
+    end
+end
