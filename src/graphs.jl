@@ -57,7 +57,7 @@ struct GridGraphGenerator <: GraphGenerator
     dims::Vector{Int}
     periodic::Bool
 end
-GridGraphGenerator(; dims::Vector{Int}=[1], periodic=true) = new(dims, periodic)
+GridGraphGenerator(; dims::Vector{Int}=[1], periodic=true, kwargs...) = GridGraphGenerator(dims, periodic)
 
 Base.length(::GridGraphGenerator) = 1
 
