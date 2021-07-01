@@ -27,39 +27,35 @@ else
 end
 
 struct CycleGraphGenerator <: GraphGenerator
+    count::Int
     nodes::Int
 end
-CycleGraphGenerator(; nodes::Int=1, kwargs...) = CycleGraphGenerator(nodes)
-
-Base.length(::CycleGraphGenerator) = 1
+CycleGraphGenerator(; count::Int=1, nodes::Int=1, kwargs...) = CycleGraphGenerator(count, nodes)
 
 generate(c::CycleGraphGenerator) = cycle_graph(c.nodes)
 
 struct WheelGraphGenerator <: GraphGenerator
+    count::Int
     nodes::Int
 end
-WheelGraphGenerator(; nodes::Int=1, kwargs...) = WheelGraphGenerator(nodes)
-
-Base.length(::WheelGraphGenerator) = 1
+WheelGraphGenerator(; count::Int=1, nodes::Int=1, kwargs...) = WheelGraphGenerator(count, nodes)
 
 generate(w::WheelGraphGenerator) = wheel_graph(w.nodes)
 
 struct StarGraphGenerator <: GraphGenerator
+    count::Int
     nodes::Int
 end
-StarGraphGenerator(; nodes::Int=1, kwargs...) = StarGraphGenerator(nodes)
-
-Base.length(::StarGraphGenerator) = 1
+StarGraphGenerator(; count::Int=1, nodes::Int=1, kwargs...) = StarGraphGenerator(count, nodes)
 
 generate(s::StarGraphGenerator) = star_graph(s.nodes)
 
 struct GridGraphGenerator <: GraphGenerator
+    count::Int
     dims::Vector{Int}
     periodic::Bool
 end
-GridGraphGenerator(; dims::Vector{Int}=[1], periodic=true, kwargs...) = GridGraphGenerator(dims, periodic)
-
-Base.length(::GridGraphGenerator) = 1
+GridGraphGenerator(; count::Int=1, dims::Vector{Int}=[1], periodic=true, kwargs...) = GridGraphGenerator(count, dims, periodic)
 
 LightGraphs.nv(g::GridGraphGenerator) = prod(g.dims)
 
