@@ -21,12 +21,13 @@ export gomen
 
 using Base.Iterators, Base.Meta, LinearAlgebra, Random, Statistics
 using Distributions
+using DrWatson
 using HypothesisTests, Imogen
 using LightGraphs, LightGraphs.SimpleGraphs
 using MLBase
 using RecipesBase
+using Requires
 using StaticArrays
-using DrWatson
 
 include("games.jl")
 include("graphs.jl")
@@ -88,6 +89,12 @@ function gomen(arena, scorer, significance, rescorer, rounds, replicates; kwargs
     end
 
     @dict game rng scorerrng series scorer significance rescorer roc auc
+end
+
+function __init__()
+    @require DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0" begin
+        include("dataframes.jl")
+    end
 end
 
 end
