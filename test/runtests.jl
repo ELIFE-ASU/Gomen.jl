@@ -120,98 +120,102 @@ end
 end
 
 @testset "Scheme" begin
+    game = Game(0.3, 1.3)
+    graph = first(CycleGraphGenerator(1,3))
     @testset "Single Agent" begin
         let N = 1000
             σ(p) = sqrt(N*p*(1-p))
             cond(p) = N*p - 3σ(p), N*p + 3σ(p)
 
-            println("Random Seed: ", Random.GLOBAL_RNG.seed)
-            Random.seed!(Random.GLOBAL_RNG.seed)
+            seed = Random.rand(UInt32)
+            println("Random Seed: ", seed)
+            Random.seed!(seed)
 
             let cf = CounterFactual()
+                arena = Arena(game, graph, cf)
+
                 a, b = cond(0.5)
-                @test a ≤ sum(Int(decide(cf, 1, 0.0) == 2) for _ in 1:N) ≤ b
-                @test a ≤ sum(Int(decide(cf, 2, 0.0) == 1) for _ in 1:N) ≤ b
+                @test a ≤ sum(Int(decide(cf, arena, 1, 0.0) == 2) for _ in 1:N) ≤ b
+                @test a ≤ sum(Int(decide(cf, arena, 2, 0.0) == 1) for _ in 1:N) ≤ b
 
                 a, b = cond(e / (1 + e))
-                @test a ≤ sum(Int(decide(cf, 1, 1.0) == 2) for _ in 1:N) ≤ b
-                @test a ≤ sum(Int(decide(cf, 2, 1.0) == 1) for _ in 1:N) ≤ b
+                @test a ≤ sum(Int(decide(cf, arena, 1, 1.0) == 2) for _ in 1:N) ≤ b
+                @test a ≤ sum(Int(decide(cf, arena, 2, 1.0) == 1) for _ in 1:N) ≤ b
 
                 a, b = cond(1 / (1 + e))
-                @test a ≤ sum(Int(decide(cf, 1, -1.0) == 2) for _ in 1:N) ≤ b
-                @test a ≤ sum(Int(decide(cf, 2, -1.0) == 1) for _ in 1:N) ≤ b
+                @test a ≤ sum(Int(decide(cf, arena, 1, -1.0) == 2) for _ in 1:N) ≤ b
+                @test a ≤ sum(Int(decide(cf, arena, 2, -1.0) == 1) for _ in 1:N) ≤ b
             end
 
             let cf = CounterFactual(Sigmoid(0.5))
+                arena = Arena(game, graph, cf)
+
                 a, b = cond(0.5)
-                @test a ≤ sum(Int(decide(cf, 1, 0.0) == 2) for _ in 1:N) ≤ b
-                @test a ≤ sum(Int(decide(cf, 2, 0.0) == 1) for _ in 1:N) ≤ b
+                @test a ≤ sum(Int(decide(cf, arena, 1, 0.0) == 2) for _ in 1:N) ≤ b
+                @test a ≤ sum(Int(decide(cf, arena, 2, 0.0) == 1) for _ in 1:N) ≤ b
 
                 a, b = cond(sqrt(e) / (1 + sqrt(e)))
-                @test a ≤ sum(Int(decide(cf, 1, 1.0) == 2) for _ in 1:N) ≤ b
-                @test a ≤ sum(Int(decide(cf, 2, 1.0) == 1) for _ in 1:N) ≤ b
+                @test a ≤ sum(Int(decide(cf, arena, 1, 1.0) == 2) for _ in 1:N) ≤ b
+                @test a ≤ sum(Int(decide(cf, arena, 2, 1.0) == 1) for _ in 1:N) ≤ b
 
                 a, b = cond(1 / (1 + sqrt(e)))
-                @test a ≤ sum(Int(decide(cf, 1, -1.0) == 2) for _ in 1:N) ≤ b
-                @test a ≤ sum(Int(decide(cf, 2, -1.0) == 1) for _ in 1:N) ≤ b
+                @test a ≤ sum(Int(decide(cf, arena, 1, -1.0) == 2) for _ in 1:N) ≤ b
+                @test a ≤ sum(Int(decide(cf, arena, 2, -1.0) == 1) for _ in 1:N) ≤ b
             end
 
             let cf = CounterFactual(Heaviside())
+                arena = Arena(game, graph, cf)
+
                 a, b = cond(0.5)
-                @test a ≤ sum(Int(decide(cf, 1, 0.0) == 2) for _ in 1:N) ≤ b
-                @test a ≤ sum(Int(decide(cf, 2, 0.0) == 1) for _ in 1:N) ≤ b
+                @test a ≤ sum(Int(decide(cf, arena, 1, 0.0) == 2) for _ in 1:N) ≤ b
+                @test a ≤ sum(Int(decide(cf, arena, 2, 0.0) == 1) for _ in 1:N) ≤ b
 
-                @test a ≤ sum(Int(decide(cf, 1, 1e-4) == 2) for _ in 1:N) ≤ b
-                @test a ≤ sum(Int(decide(cf, 2, 1e-4) == 1) for _ in 1:N) ≤ b
+                @test a ≤ sum(Int(decide(cf, arena, 1, 1e-4) == 2) for _ in 1:N) ≤ b
+                @test a ≤ sum(Int(decide(cf, arena, 2, 1e-4) == 1) for _ in 1:N) ≤ b
 
-                @test a ≤ sum(Int(decide(cf, 1, -1e-4) == 2) for _ in 1:N) ≤ b
-                @test a ≤ sum(Int(decide(cf, 2, -1e-4) == 1) for _ in 1:N) ≤ b
+                @test a ≤ sum(Int(decide(cf, arena, 1, -1e-4) == 2) for _ in 1:N) ≤ b
+                @test a ≤ sum(Int(decide(cf, arena, 2, -1e-4) == 1) for _ in 1:N) ≤ b
 
                 a, b = cond(1.0)
-                @test a ≤ sum(Int(decide(cf, 1, 1.0) == 2) for _ in 1:N) ≤ b
-                @test a ≤ sum(Int(decide(cf, 2, 1.0) == 1) for _ in 1:N) ≤ b
+                @test a ≤ sum(Int(decide(cf, arena, 1, 1.0) == 2) for _ in 1:N) ≤ b
+                @test a ≤ sum(Int(decide(cf, arena, 2, 1.0) == 1) for _ in 1:N) ≤ b
 
                 a, b = cond(0.0)
-                @test a ≤ sum(Int(decide(cf, 1, -1.0) == 2) for _ in 1:N) ≤ b
-                @test a ≤ sum(Int(decide(cf, 2, -1.0) == 1) for _ in 1:N) ≤ b
+                @test a ≤ sum(Int(decide(cf, arena, 1, -1.0) == 2) for _ in 1:N) ≤ b
+                @test a ≤ sum(Int(decide(cf, arena, 2, -1.0) == 1) for _ in 1:N) ≤ b
             end
         end
     end
 
     @testset "Multiple Agents" begin
         let cf = CounterFactual(Heaviside())
-            @test decide(cf, [1, 2], [1., -1.]) == [2, 2]
-            @test decide(cf, [1, 1], [1., -1.]) == [2, 1]
+            arena = Arena(game, graph, cf)
+
+            @test decide(cf, arena, [1, 2], [1., -1.]) == [2, 2]
+            @test decide(cf, arena, [1, 1], [1., -1.]) == [2, 1]
         end
     end
 
     @testset "From Payoffs" begin
         let cf = CounterFactual(Heaviside())
-            @test_throws ArgumentError decide(cf, [0, 2], Float64[0 0; 0 0])
-            @test_throws ArgumentError decide(cf, [3, 2], Float64[0 0; 0 0])
-            @test_throws ArgumentError decide(cf, [1, 1], Float64[0 0 0; 0 0 0])
-            @test_throws ArgumentError decide(cf, [1, 1, 1], Float64[0 0; 0 0])
-            @test_throws ArgumentError decide(cf, [1, 1], Float64[0 0])
-            @test_throws ArgumentError decide(cf, [1, 1], Float64[0 0; 0 0; 0 0])
+            arena = Arena(game, graph, cf)
 
-            @test decide(cf, [1, 1], Float64[1 1; 0 0]) == [1, 1]
-            @test decide(cf, [1, 1], Float64[1 0; 0 1]) == [1, 2]
-            @test decide(cf, [1, 2], Float64[1 1; 0 0]) == [1, 1]
-            @test decide(cf, [1, 2], Float64[1 0; 0 1]) == [1, 2]
-            @test decide(cf, [2, 1], Float64[1 1; 0 0]) == [1, 1]
-            @test decide(cf, [2, 1], Float64[1 0; 0 1]) == [1, 2]
-            @test decide(cf, [2, 2], Float64[1 1; 0 0]) == [1, 1]
-            @test decide(cf, [2, 2], Float64[1 0; 0 1]) == [1, 2]
+            @test_throws ArgumentError decide(cf, arena, [0, 2], Float64[0 0; 0 0])
+            @test_throws ArgumentError decide(cf, arena, [3, 2], Float64[0 0; 0 0])
+            @test_throws ArgumentError decide(cf, arena, [1, 1], Float64[0 0 0; 0 0 0])
+            @test_throws ArgumentError decide(cf, arena, [1, 1, 1], Float64[0 0; 0 0])
+            @test_throws ArgumentError decide(cf, arena, [1, 1], Float64[0 0])
+            @test_throws ArgumentError decide(cf, arena, [1, 1], Float64[0 0; 0 0; 0 0])
+
+            @test decide(cf, arena, [1, 1], Float64[1 1; 0 0]) == [1, 1]
+            @test decide(cf, arena, [1, 1], Float64[1 0; 0 1]) == [1, 2]
+            @test decide(cf, arena, [1, 2], Float64[1 1; 0 0]) == [1, 1]
+            @test decide(cf, arena, [1, 2], Float64[1 0; 0 1]) == [1, 2]
+            @test decide(cf, arena, [2, 1], Float64[1 1; 0 0]) == [1, 1]
+            @test decide(cf, arena, [2, 1], Float64[1 0; 0 1]) == [1, 2]
+            @test decide(cf, arena, [2, 2], Float64[1 1; 0 0]) == [1, 1]
+            @test decide(cf, arena, [2, 2], Float64[1 0; 0 1]) == [1, 2]
         end
-    end
-end
-
-@testset "Lattice Graph" begin
-    @test_throws DomainError lattice_graph(0, 5)
-    @test_throws DomainError lattice_graph(5, 0)
-    @testset "Nodes and Edges" for nrows in 1:10, ncols in 1:10
-        @test nv(lattice_graph(nrows, ncols)) == nrows * ncols
-        @test ne(lattice_graph(nrows, ncols)) == 2 * nrows * ncols - nrows - ncols
     end
 end
 
@@ -259,7 +263,11 @@ end
             @test payoffs(arena, [1, 2]) == [0.25 1.00; 0.00 1.25]
         end
 
-        let arena = Arena(Game(0.25, 1.25), lattice_graph(2, 2), CounterFactual())
+        let game = Game(0.25, 1.25)
+            graph = first(GridGraphGenerator(; count=1, dims=[2,2]))
+            scheme = CounterFactual(Heaviside())
+            arena = Arena(game, graph, scheme)
+
             @test payoffs(arena, [1, 1, 1, 1]) == [2.00 2.00 2.00 2.00; 2.50 2.50 2.50 2.50]
             @test payoffs(arena, [1, 2, 1, 1]) == [1.25 2.00 2.00 1.25; 1.25 2.50 2.50 1.25]
             @test payoffs(arena, [2, 2, 2, 2]) == [0.50 0.50 0.50 0.50; 0.00 0.00 0.00 0.00]
@@ -267,10 +275,15 @@ end
     end
 
     @testset "round" begin
-        println("Random Seed: ", Random.GLOBAL_RNG.seed)
-        Random.seed!(Random.GLOBAL_RNG.seed)
+        seed = Random.rand(UInt32)
+        println("Random Seed: ", seed)
+        Random.seed!(seed)
 
-        let arena = Arena(Game(0.25, 1.25), lattice_graph(2, 2), CounterFactual(Heaviside()))
+        let game = Game(0.25, 1.25)
+            graph = first(GridGraphGenerator(; count=1, dims=[2,2]))
+            scheme = CounterFactual(Heaviside())
+            arena = Arena(game, graph, scheme)
+
             N = 1000
             σ(p) = sqrt(N*p*(1-p))
             cond(p) = N*p - 3σ(p), N*p + 3σ(p)

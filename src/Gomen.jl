@@ -29,6 +29,7 @@ using RecipesBase
 using Requires
 using StaticArrays
 
+include("core.jl")
 include("games.jl")
 include("graphs.jl")
 include("inference.jl")
