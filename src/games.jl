@@ -205,6 +205,80 @@ function decide(cf::S,
 end
 
 """
+    MimicRandom()
+
+The "mimic random" update scheme. Under this scheme, the agent will switch their strategy at
+uniformly at random to the strategy of one of their neighbors or their own.
+"""
+struct MimicRandom <: AbstractScheme end
+
+function decide(m::MimicRandom,
+                arena::AbstractArena{G, MimicRandom},
+                ss::AbstractVector{Int},
+                dps::AbstractArray{Float64,2}) where {G <: SimpleGraph}
+    map(i -> ss[rand([i; neighbors(arena, i)])], 1:length(ss))
+end
+
+function decide(::MimicRandom, ::AbstractArena, ::AbstractVector{Int}, ::AbstractVector{Float64})
+    error("this method is ill-defined")
+end
+decide(::MimicRandom, ::AbstractArena, ::Int, ::Float64) = error("this method is ill-defined")
+
+"""
+    MimicBest()
+
+The "mimic best" update scheme. Under this scheme, the agent will switch their strategy to that
+of their neighbors who recieved the greatest payout, possibly retaining their own.
+"""
+struct MimicBest <: AbstractScheme end
+
+function decide(m::MimicBest,
+                arena::AbstractArena{G, MimicBest},
+                ss::AbstractVector{Int},
+                ps::AbstractArray{Float64,2}) where {G <: SimpleGraph}
+    map(1:length(ss)) do i
+        ns = neighbors(arena, i)
+        m, j = findmax(ps[ns])
+        m > ps[i] ? ss[ns[j]] : ss[i]
+    end
+end
+
+function decide(::MimicBest, ::AbstractArena, ::AbstractVector{Int}, ::AbstractVector{Float64})
+    error("this method is ill-defined")
+end
+decide(::MimicBest, ::AbstractArena, ::Int, ::Float64) = error("this method is ill-defined")
+
+"""
+    MimicBiased()
+
+The "mimic biased" update scheme. Under this scheme, the agent will switch their strategy
+randomly to that of their neighbors with a log-probability proportional to their payoffs.
+"""
+struct MimicBiased <: AbstractScheme end
+
+function decide(m::MimicBiased,
+                arena::AbstractArena{G, MimicBiased},
+                ss::AbstractVector{Int},
+                ps::AbstractArray{Float64,2}) where {G <: SimpleGraph}
+    map(1:length(ss)) do i
+        idx = [i; neighbors(arena, i)]
+        p = exp.(ps[idx])
+
+        perm = sortperm(p)
+        p = p[perm]
+        idx = idx[perm]
+
+        j = findfirst(cumsum(p) .>= sum(p)*rand())
+        ss[idx[j]]
+    end
+end
+
+function decide(::MimicBiased, ::AbstractArena, ::AbstractVector{Int}, ::AbstractVector{Float64})
+    error("this method is ill-defined")
+end
+decide(::MimicBiased, ::AbstractArena, ::Int, ::Float64) = error("this method is ill-defined")
+
+"""
     Arena(game, graph, scheme) <: AbstractArena
 
 An arena in which the agents, situated on the vertices of a graph, play a game with their neighbors.
