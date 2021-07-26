@@ -179,3 +179,23 @@ auc(r::ROC) = @views dot(r.tpr[2:end] + r.tpr[1:end-1], r.fpr[2:end] - r.fpr[1:e
         [0,1], [0,1]
     end
 end
+
+safelog(x::Float64) = iszero(x) ? zero(x) : log(x)
+function rescale(scores::AbstractArray{Float64})
+    a, b = extrema(scores)
+    @. (scores - a) / (b - a)
+end
+
+function perf(arena::AbstractArena, edges::Vector{EdgeEvidence}, kernel::Function)
+    g = graph(arena)
+    gt = Float64[has_edge(g, e.src, e.dst) for e in edges]
+    scores = rescale([e.evidence for e in edges])
+    ll = 0.
+    for (g, s) in zip(gt, scores)
+        ll += kernel(g, s)
+    end
+    ll / length(edges)
+end
+
+logloss(arena, edges) = perf(arena, edges, (g,s) -> -(g * safelog(s) + (1. - g) * safelog(1. - s)))
+brier(arena, edges) = perf(arena, edges, (g,s) -> (g - s)^2)
