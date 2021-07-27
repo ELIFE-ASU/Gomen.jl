@@ -173,7 +173,7 @@ struct ROC <: PerformanceCurve
     end
 end
 ROC() = ROC([0.0, 1.0], [0.0, 1.0])
-ROC(::AbstractArray{Float64}) = ROC()
+ROC(::AbstractArray{Int}) = ROC()
 ROC(c::Curve) = ROC(c.xs, c.ys)
 
 fpr(r::ROC) = r.fpr
@@ -219,7 +219,7 @@ struct PRC <: PerformanceCurve
     end
 end
 PRC(baseline::Float64=0.5) = PRC([0.0, 0.0, 1.0, 1.0], [1.0, baseline, baseline, 0.0])
-PRC(gt::AbstractArray{Float64}) = PRC(mean(gt))
+PRC(gt::AbstractArray{Int}) = PRC(mean(gt))
 PRC(c::Curve) = PRC(c.xs, c.ys)
 
 recall(r::PRC) = r.recall
