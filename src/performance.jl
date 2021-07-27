@@ -85,7 +85,7 @@ function MLBase.roc(T::Type{<:PerformanceCurve},
     gt = [Int(has_edge(g, e.src, e.dst)) for e in edges]
     scores = [e.evidence for e in edges]
     if all(==(scores[1]), scores)
-        T()
+        T(gt)
     else
         x, y = xmetric(T), ymetric(T)
         r = roc(gt, scores, args...)
@@ -173,6 +173,7 @@ struct ROC <: PerformanceCurve
     end
 end
 ROC() = ROC([0.0, 1.0], [0.0, 1.0])
+ROC(::AbstractArray{Float64}) = ROC()
 ROC(c::Curve) = ROC(c.xs, c.ys)
 
 fpr(r::ROC) = r.fpr
@@ -217,7 +218,8 @@ struct PRC <: PerformanceCurve
         new(recall, precision)
     end
 end
-PRC() = new([0.0, 0.0, 1.0, 1.0], [1.0, 0.5, 0.5, 0.0])
+PRC(baseline::Float64=0.5) = PRC([0.0, 0.0, 1.0, 1.0], [1.0, baseline, baseline, 0.0])
+PRC(gt::AbstractArray{Float64}) = PRC(mean(gt))
 PRC(c::Curve) = PRC(c.xs, c.ys)
 
 recall(r::PRC) = r.recall
