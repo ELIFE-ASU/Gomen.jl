@@ -1,55 +1,29 @@
 using Printf
 
-struct ROC
-    fpr::Vector{Float64}
-    tpr::Vector{Float64}
-    ROC() = new([0.0, 1.0], [0.0, 1.0])
-    function ROC(fpr::Vector{Float64}, tpr::Vector{Float64}; down=true)
-        if size(fpr) != size(tpr)
-            throw(DimensionMismatch("TPR and FPR vectors have different sizes"))
-        end
+abstract type PerformanceCurve end
 
-        if !(issorted(fpr) && issorted(tpr))
-            p = sortperm(collect(zip(fpr, tpr)))
-            fpr = fpr[p]
-            tpr = tpr[p]
-        end
+xmetric(::Type{<: PerformanceCurve}) = error("unimplemented")
+xmetric(::T) where {T <: PerformanceCurve} = xmetric(T)
 
-        if !issorted(tpr)
-            throw(ArgumentError("the ROC curve is not monotonic increasing"))
-        end
+ymetric(::Type{<: PerformanceCurve}) = error("unimplemented")
+ymetric(::T) where {T <: PerformanceCurve} = ymetric(T)
 
-        if down
-            d = downsample(fpr, tpr)
-            fpr = fpr[d]
-            tpr = tpr[d]
-        end
+xlabel(::Type{<: PerformanceCurve}) = error("unimplemented")
+xlabel(::T) where {T <: PerformanceCurve} = xlabel(T)
 
-        if fpr[1] < 0.0
-            throw(ArgumentError("negative FPR provided"))
-        elseif tpr[1] < 0.0
-            throw(ArgumentError("negative TPR provided"))
-        elseif !(fpr[1] ≈ tpr[1] ≈ 0.0)
-            pushfirst!(fpr, 0.0)
-            pushfirst!(tpr, 0.0)
-        end
+ylabel(::Type{<: PerformanceCurve}) = error("unimplemented")
+ylabel(::T) where {T <: PerformanceCurve} = ylabel(T)
 
-        if fpr[end] > 1.0
-            throw(ArgumentError("FPR greater than 1.0 provided"))
-        elseif tpr[end] > 1.0
-            throw(ArgumentError("FPR greater than 1.0 provided"))
-        elseif !(fpr[end] ≈ tpr[end] ≈ 1.0)
-            push!(fpr, 1.0)
-            push!(tpr, 1.0)
-        end
+xvalues(::PerformanceCurve) = error("unimplemented")
+yvalues(::PerformanceCurve) = error("unimplemented")
 
-        new(fpr, tpr)
-    end
-end
+startpoint(::Type{<: PerformanceCurve}, xs, ys) = error("unimplemented")
+startpoint(::T, args...) where {T <: PerformanceCurve} = startpoint(T, args...)
 
-fpr(r::ROC) = r.fpr
+endpoint(::Type{<: PerformanceCurve}, xs, ys) = error("unimplemented")
+endpoint(::T, args...) where {T <: PerformanceCurve} = endpoint(T, args...)
 
-tpr(r::ROC) = r.tpr
+sortage!(::Type{<: PerformanceCurve}, xs, ys) = error("unimplemented")
 
 function downsample(xs::AbstractVector{Float64}, ys::AbstractVector{Float64})
     keep = [1]
@@ -61,7 +35,67 @@ function downsample(xs::AbstractVector{Float64}, ys::AbstractVector{Float64})
     keep
 end
 
-Base.length(r::ROC) = length(fpr(r))
+function prepare!(::Type{T},
+                 xs::AbstractVector{Float64},
+                 ys::AbstractVector{Float64};
+                 down=true) where {T <: PerformanceCurve}
+
+    if size(xs) != size(ys)
+        throw(DimensionMismatch("$(xlabel(T)) and $(ylabel(T)) vectors have different sizes"))
+    elseif any(<(0.0), xs)
+        throw(ArgumentError("$(xlabel(T)) less than 0.0 provided"))
+    elseif any(<(0.0), ys)
+        throw(ArgumentError("$(ylabel(T)) less than 0.0 provided"))
+    elseif any(>(1.0), xs)
+        throw(ArgumentError("$(xlabel(T)) greater than 1.0 provided"))
+    elseif any(>(1.0), ys)
+        throw(ArgumentError("$(ylabel(T)) greater than 1.0 provided"))
+    end
+
+    sortage!(T, xs, ys)
+
+    if down
+        d = downsample(xs, ys)
+        xs = xs[d]
+        ys = ys[d]
+    end
+
+    s = startpoint(T, xs, ys)
+    if !all((xs[begin], ys[begin]) .≈ s)
+        pushfirst!(xs, s[begin])
+        pushfirst!(ys, s[end])
+    end
+
+    e = endpoint(T, xs, ys)
+    if !all((xs[end], ys[end]) .≈ e)
+        push!(xs, e[begin])
+        push!(ys, e[end])
+    end
+
+    xs, ys
+end
+
+Base.length(c::PerformanceCurve) = length(xvalues(c))
+
+function MLBase.roc(T::Type{<:PerformanceCurve},
+                    arena::AbstractArena,
+                    edges::Vector{EdgeEvidence},
+                    args...)
+    g = graph(arena)
+    gt = [Int(has_edge(g, e.src, e.dst)) for e in edges]
+    scores = [e.evidence for e in edges]
+    if all(==(scores[1]), scores)
+        T()
+    else
+        x, y = xmetric(T), ymetric(T)
+        r = roc(gt, scores, args...)
+        T(map(x, r), map(y, r))
+    end
+end
+
+auc(c::PerformanceCurve) = let xs = xvalues(c), ys = yvalues(c)
+    @views dot(ys[2:end] + ys[1:end-1], xs[2:end] - xs[1:end-1]) / 2.0
+end
 
 struct Curve
     xs::Vector{Float64}
@@ -73,7 +107,7 @@ struct Curve
         new(xs, ys)
     end
 end
-Curve(r::ROC) = Curve(fpr(r), tpr(r))
+Curve(r::PerformanceCurve) = Curve(xvalues(r), yvalues(r))
 
 Base.length(c::Curve) = length(c.xs)
 
@@ -128,23 +162,96 @@ end
 
 Base.:/(c::Curve, k::Number) = Curve(c.xs, c.ys / k)
 
-Statistics.mean(rocs::AbstractVector{ROC}) = let c = mean(Curve.(rocs))
-    ROC(c.xs, c.ys)
-end
+Statistics.mean(cs::AbstractVector{T}) where {T <: PerformanceCurve} = T(mean(Curve.(cs)))
 
-function MLBase.roc(arena::AbstractArena, edges::Vector{EdgeEvidence}, args...)
-    g = graph(arena)
-    gt = [Int(has_edge(g, e.src, e.dst)) for e in edges]
-    scores = [e.evidence for e in edges]
-    if all(==(scores[1]), scores)
-        ROC([0.0, 1.0], [0.0, 1.0])
-    else
-        r = roc(gt, scores, args...)
-        ROC(map(false_positive_rate, r), map(true_positive_rate, r))
+struct ROC <: PerformanceCurve
+    fpr::Vector{Float64}
+    tpr::Vector{Float64}
+    function ROC(fpr::Vector{Float64}, tpr::Vector{Float64}; kwargs...)
+        fpr, tpr = prepare!(ROC, deepcopy(fpr), deepcopy(tpr); kwargs...)
+        new(fpr, tpr)
     end
 end
+ROC() = ROC([0.0, 1.0], [0.0, 1.0])
+ROC(c::Curve) = ROC(c.xs, c.ys)
 
-auc(r::ROC) = @views dot(r.tpr[2:end] + r.tpr[1:end-1], r.fpr[2:end] - r.fpr[1:end-1]) / 2.0
+fpr(r::ROC) = r.fpr
+
+tpr(r::ROC) = r.tpr
+
+xmetric(::Type{ROC}) = false_positive_rate
+
+ymetric(::Type{ROC}) = true_positive_rate
+
+xlabel(::Type{ROC}) = :FPR
+
+ylabel(::Type{ROC}) = :TPR
+
+startpoint(::Type{ROC}, fpr, tpr) = (0.0, 0.0)
+
+endpoint(::Type{ROC}, fpr, tpr) = (1.0, 1.0)
+
+xvalues(r::ROC) = fpr(r)
+
+yvalues(r::ROC) = tpr(r)
+
+function sortage!(::Type{ROC}, fpr, tpr)
+    if !(issorted(fpr) && issorted(tpr))
+        p = sortperm(collect(zip(fpr, tpr)))
+        fpr[:] = fpr[p]
+        tpr[:] = tpr[p]
+    end
+
+    if !issorted(tpr)
+        throw(ArgumentError("the $T curve is not monotonic"))
+    end
+
+    fpr, tpr
+end
+
+struct PRC <: PerformanceCurve
+    recall::Vector{Float64}
+    precision::Vector{Float64}
+    function PRC(recall::Vector{Float64}, precision::Vector{Float64}; kwargs...)
+        recall, precision = prepare!(PRC, deepcopy(recall), deepcopy(precision); kwargs...)
+        new(recall, precision)
+    end
+end
+PRC() = new([0.0, 0.0, 1.0, 1.0], [1.0, 0.5, 0.5, 0.0])
+PRC(c::Curve) = PRC(c.xs, c.ys)
+
+recall(r::PRC) = r.recall
+
+precision(r::PRC) = r.precision
+
+xmetric(::Type{PRC}) = MLBase.recall
+
+ymetric(::Type{PRC}) = MLBase.precision
+
+xlabel(::Type{PRC}) = :Recall
+
+ylabel(::Type{PRC}) = :Precision
+
+startpoint(::Type{PRC}, recall, precision) = (0.0, 1.0)
+
+endpoint(::Type{PRC}, recall, precision) = (1.0, 0.0)
+
+xvalues(r::PRC) = recall(r)
+
+yvalues(r::PRC) = precision(r)
+
+function prcorder((r1, p1), (r2, p2))
+    isequal(r1, r2) && return isless(p2, p1)
+    isless(r1, r2)
+end
+
+function sortage!(::Type{PRC}, recall, precision)
+    p = sortperm(collect(zip(recall, precision)); lt = prcorder)
+    recall[:] = recall[p]
+    precision[:] = precision[p]
+
+    recall, precision
+end
 
 @recipe function plotroc(r::ROC)
     a = auc(r)

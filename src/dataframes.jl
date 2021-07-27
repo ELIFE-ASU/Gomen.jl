@@ -1,3 +1,4 @@
-function DataFrames.DataFrame(roc::ROC, args... ; kwargs...)
-    DataFrames.DataFrame(FPR=fpr(roc), TPR=tpr(roc), args...; kwargs...)
+function DataFrames.DataFrame(c::PerformanceCurve, args... ; kwargs...)
+    df = DataFrames.DataFrame(x=xvalues(c), y=yvalues(c), args...; kwargs...)
+    DataFrames.rename!(df, :x => xlabel(c), :y => ylabel(c))
 end

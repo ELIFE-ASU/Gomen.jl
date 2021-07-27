@@ -15,7 +15,9 @@ export ChisqScorer, LaggedChisqScorer, SymLaggedChisqScorer
 export MIScorer, LaggedMIScorer, SymLaggedMIScorer
 export TEScorer, SymTEScorer
 export SignificanceScorer
-export ROC, roc, tpr, fpr, auc
+export PerformanceCurve, xlabel, ylabel, xvalues, yvalues, roc, auc
+export ROC, PRC, tpr, fpr, recall, precision
+export logloss, brier
 export SimulationError, ScoringError, PerformanceError
 export gomen
 
@@ -82,14 +84,15 @@ function gomen(arena, scorer, significance, rescorer, rounds, replicates; kwargs
         throw(ScoringError(scorerrng, arena, series, scorer, significance, rescorer, err))
     end
 
-    roc, auc = try
-        roc = Gomen.roc(arena, scores)
-        roc, Gomen.auc(roc)
+    roc, rauc, prc, pauc, logloss, brier = try
+        roc = Gomen.roc(ROC, arena, scores)
+        prc = MLBase.roc(PRC, arena, scores)
+        roc, auc(roc), prc, auc(prc), Gomen.logloss(arena, scores), Gomen.brier(arena, scores)
     catch err
         throw(PerformanceError(arena, series, scorer, significance, rescorer, scores, err))
     end
 
-    @dict game rng scorerrng series scorer significance rescorer roc auc
+    @dict game rng scorerrng series scorer significance rescorer roc rauc prc pauc logloss brier
 end
 
 function __init__()
