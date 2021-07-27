@@ -61,7 +61,7 @@ struct PerformanceError
     scorer::Union{Nothing,Scorer}
     significance::Bool
     rescorer::Union{Nothing,Rescorer}
-    scores::Array{Int,2}
+    scores::Vector{EdgeEvidence}
     err
 end
 
