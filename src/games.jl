@@ -186,6 +186,29 @@ else
 end
 
 """
+    RandomScheme(p=0.5)
+
+The "random" update scheme. Under this scheme, the agent will randomly choose strategy 2 with
+probability `p`. This is primarily for validation purposes.
+"""
+struct RandomScheme <: AbstractScheme
+    p::Float64
+end
+RandomScheme() = RandomScheme(0.5)
+
+function decide(r::RandomScheme,
+                arena::AbstractArena{G, RandomScheme},
+                ss::AbstractVector{Int},
+                ps::AbstractArray{Float64,2}) where {G <: SimpleGraph}
+    Int.(rand(length(ss)) .> r.p) .+ 1
+end
+
+function decide(::RandomScheme, ::AbstractArena, ::AbstractVector{Int}, ::AbstractVector{Float64})
+    error("this method is ill-defined")
+end
+decide(::RandomScheme, ::AbstractArena, ::Int, ::Float64) = error("this method is ill-defined")
+
+"""
     CounterFactural([rule = Sigmoid()])
 
 The "counter-factual" update scheme. Under this scheme, the agent will switch their strategy

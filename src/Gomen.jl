@@ -5,7 +5,7 @@ export SimpleGraph, GraphGenerator, nv, params
 export CycleGraphGenerator, WheelGraphGenerator, StarGraphGenerator, GridGraphGenerator
 export BarabasiAlbertGenerator, ErdosRenyiGenerator
 export AbstractRule, apply, Sigmoid, Heaviside
-export AbstractScheme, CounterFactual, MimicRandom, MimicBest, MimicBiased, decide
+export AbstractScheme, RandomScheme, CounterFactual, MimicRandom, MimicBest, MimicBiased, decide
 export AbstractArena, game, graph, scheme, Arena, payoffs
 export Aggregator, Sum, HarmonicMean
 export Scores, Rescorer, GammaRescorer, CLRRescorer
